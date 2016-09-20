@@ -5,4 +5,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+
+    <string name="facebook_app_id">1154221818000603</string>
+
+    <string name="user_name">User</string>
 </resources>

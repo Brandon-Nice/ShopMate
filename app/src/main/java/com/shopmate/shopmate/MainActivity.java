@@ -12,9 +12,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.login.widget.LoginButton;
+import com.facebook.login.widget.ProfilePictureView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    static LoginButton loginButton;
+    static CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +53,47 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        if (isLoggedIn()) {
+            final TextView user_name = (TextView) findViewById(R.id.usertextView);
+            loginButton = LoginActivity.getLoginButton();
+            callbackManager = LoginActivity.getCallbackManager();
+
+            //Gets the name of the user
+            new GraphRequest(AccessToken.getCurrentAccessToken(), "/me", null,
+                    HttpMethod.GET, new GraphRequest.Callback() {
+                public void onCompleted(GraphResponse response) {
+                    //handle the response
+                    final JSONObject jsonObject = response.getJSONObject();
+                    String name = "";
+                    try {
+                        name = jsonObject.getString("name");
+                        String firstName = name.substring(0, name.indexOf(" "));
+                        String lastName = name.substring(name.indexOf(" ") + 1);
+                        //user_name.setText(name);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).executeAsync();
+            /*
+            //Gets the picture of the user
+            final ProfilePictureView profilePictureView;
+            profilePictureView = (ProfilePictureView) findViewById(R.id.userimageView);
+            profilePictureView.setCropped(true);
+            profilePictureView.setProfileId(AccessToken.getCurrentAccessToken().getUserId());
+            */
+        }
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+    }
+
+    public boolean isLoggedIn() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        return accessToken != null;
     }
 
     @Override
@@ -98,4 +152,5 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }
