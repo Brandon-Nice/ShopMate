@@ -9,4 +9,5 @@
     <string name="facebook_app_id">1154221818000603</string>
 
     <string name="user_name">User</string>
+    <string name="title_activity_add_item">AddItemActivity</string>
 </resources>
