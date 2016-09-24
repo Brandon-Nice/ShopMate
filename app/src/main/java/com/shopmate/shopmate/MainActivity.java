@@ -1,8 +1,10 @@
 package com.shopmate.shopmate;
 
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -38,6 +40,14 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //Gets the picture of the user
+        /*
+        final ProfilePictureView profilePictureView;
+        profilePictureView = (ProfilePictureView) findViewById(R.id.userimageView);
+        profilePictureView.setCropped(true);
+        profilePictureView.setProfileId(AccessToken.getCurrentAccessToken().getUserId());
+        */
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,7 +64,6 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         if (isLoggedIn()) {
-            final TextView user_name = (TextView) findViewById(R.id.usertextView);
             loginButton = LoginActivity.getLoginButton();
             callbackManager = LoginActivity.getCallbackManager();
 
@@ -66,23 +75,18 @@ public class MainActivity extends AppCompatActivity
                     final JSONObject jsonObject = response.getJSONObject();
                     String name = "";
                     try {
+                        TextView user_name = (TextView) findViewById(R.id.usertextView);
                         name = jsonObject.getString("name");
                         String firstName = name.substring(0, name.indexOf(" "));
                         String lastName = name.substring(name.indexOf(" ") + 1);
-                        //user_name.setText(name);
+                        user_name.setText(name);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
             }).executeAsync();
-            /*
-            //Gets the picture of the user
-            final ProfilePictureView profilePictureView;
-            profilePictureView = (ProfilePictureView) findViewById(R.id.userimageView);
-            profilePictureView.setCropped(true);
-            profilePictureView.setProfileId(AccessToken.getCurrentAccessToken().getUserId());
-            */
+
         }
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);

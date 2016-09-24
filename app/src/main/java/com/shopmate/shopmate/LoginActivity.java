@@ -28,10 +28,11 @@ public class LoginActivity extends AppCompatActivity {
         //Facebook initialization
         FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_login);
-        /*
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        */
+
+
+        if(isLoggedIn()) {
+            loginUser(AccessToken.getCurrentAccessToken().getUserId());
+        }
 
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
