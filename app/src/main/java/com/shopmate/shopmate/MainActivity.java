@@ -1,10 +1,8 @@
 package com.shopmate.shopmate;
 
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -22,8 +21,9 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
-import com.facebook.login.widget.ProfilePictureView;
+import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,14 +39,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        //Gets the picture of the user
-        /*
-        final ProfilePictureView profilePictureView;
-        profilePictureView = (ProfilePictureView) findViewById(R.id.userimageView);
-        profilePictureView.setCropped(true);
-        profilePictureView.setProfileId(AccessToken.getCurrentAccessToken().getUserId());
-        */
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -68,7 +60,7 @@ public class MainActivity extends AppCompatActivity
             callbackManager = LoginActivity.getCallbackManager();
 
             //Gets the name of the user
-            new GraphRequest(AccessToken.getCurrentAccessToken(), "/me", null,
+            new GraphRequest(AccessToken.getCurrentAccessToken(), "/me?fields=id,name,picture.type(large)", null,
                     HttpMethod.GET, new GraphRequest.Callback() {
                 public void onCompleted(GraphResponse response) {
                     //handle the response
@@ -76,17 +68,50 @@ public class MainActivity extends AppCompatActivity
                     String name = "";
                     try {
                         TextView user_name = (TextView) findViewById(R.id.usertextView);
+                        ImageView user_picture = (ImageView) findViewById(R.id.userimageView);
+
                         name = jsonObject.getString("name");
                         String firstName = name.substring(0, name.indexOf(" "));
                         String lastName = name.substring(name.indexOf(" ") + 1);
                         user_name.setText(name);
+                        final JSONObject picObj = jsonObject.getJSONObject("picture");
+                        final JSONObject dataObj = picObj.getJSONObject("data");
+                        String url = dataObj.getString("url");
+                        System.out.println("URL: " + url);
+                        Picasso.with(getApplicationContext()).load(url).into(user_picture);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
             }).executeAsync();
+            /*
+            new GraphRequest(AccessToken.getCurrentAccessToken(), "/me/picture?type=large", null,
+                    HttpMethod.GET, new GraphRequest.Callback() {
+                public void onCompleted(GraphResponse response) {
+                    //handle the response
+                    String URL = "";
+                    try {
+                        final JSONObject jsonObject = response.getJSONObject();
+                        System.out.println("jsonArray" + jsonObject.toString());
+                        String url = jsonObject.getString("url");
+                        System.out.println("url" + url);
 
+
+                        JSONObject data = jsonArray.getJSONObject("data");
+                        System.out.println("data" + data);
+                        ImageView user_picture = (ImageView) findViewById(R.id.userimageView);
+                        URL = data.getString("url");
+                        System.out.println("URL" + URL);
+                        Picasso.with(getApplicationContext()).load(URL).into(user_picture);
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).executeAsync();
+            */
         }
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
