@@ -29,4 +29,8 @@ public class ShopMateException extends Exception {
     public ShopMateException(Throwable cause) {
         this(ShopMateErrorCode.INTERNAL_ERROR, cause);
     }
+
+    public ShopMateErrorCode getCode() {
+        return code;
+    }
 }
