@@ -59,7 +59,6 @@ public class ShoppingListItemBuilder {
 
     public ShoppingListItem build() {
         return new ShoppingListItem(
-                Optional.<Long>absent(),
                 itemName,
                 itemDescription,
                 itemImageUrl,

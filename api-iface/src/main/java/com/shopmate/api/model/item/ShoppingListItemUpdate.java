@@ -4,7 +4,6 @@ import com.google.common.base.Optional;
 
 public class ShoppingListItemUpdate {
 
-    private final long id;
     private final Optional<String> name;
     private final Optional<String> description;
     private final Optional<Optional<String>> imageUrl;
@@ -14,7 +13,6 @@ public class ShoppingListItemUpdate {
     private final Optional<ShoppingListItemPriority> priority;
 
     public ShoppingListItemUpdate(
-            long id,
             Optional<String> name,
             Optional<String> description,
             Optional<Optional<String>> imageUrl,
@@ -22,7 +20,6 @@ public class ShoppingListItemUpdate {
             Optional<Integer> quantity,
             Optional<Integer> quantityPurchased,
             Optional<ShoppingListItemPriority> priority) {
-        this.id = id;
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
@@ -34,7 +31,6 @@ public class ShoppingListItemUpdate {
 
     public static ShoppingListItemUpdate fromDifference(ShoppingListItem originalItem, ShoppingListItem newItem) {
         return new ShoppingListItemUpdate(
-                originalItem.getId().or(newItem.getId()).get(),
                 updateIfNotEqual(originalItem.getName(), newItem.getName()),
                 updateIfNotEqual(originalItem.getDescription(), newItem.getDescription()),
                 updateIfNotEqual(originalItem.getImageUrl(), newItem.getImageUrl()),
@@ -46,7 +42,6 @@ public class ShoppingListItemUpdate {
 
     public ShoppingListItem applyTo(ShoppingListItem baseItem) {
         return new ShoppingListItem(
-                baseItem.getId(),
                 name.or(baseItem.getName()),
                 description.or(baseItem.getDescription()),
                 imageUrl.or(baseItem.getImageUrl()),

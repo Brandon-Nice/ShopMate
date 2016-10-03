@@ -7,7 +7,6 @@ import com.google.common.base.Optional;
  */
 public class ShoppingListItem {
 
-    private final Optional<Long> id;
     private final String name;
     private final String description;
     private final Optional<String> imageUrl;
@@ -17,7 +16,6 @@ public class ShoppingListItem {
     private final ShoppingListItemPriority priority;
 
     public ShoppingListItem(
-            Optional<Long> id,
             String name,
             String description,
             Optional<String> imageUrl,
@@ -25,7 +23,6 @@ public class ShoppingListItem {
             int quantity,
             int quantityPurchased,
             ShoppingListItemPriority priority) {
-        this.id = id;
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
@@ -34,8 +31,6 @@ public class ShoppingListItem {
         this.quantityPurchased = quantityPurchased;
         this.priority = priority;
     }
-
-    public Optional<Long> getId() { return id; }
 
     public String getName() {
         return name;

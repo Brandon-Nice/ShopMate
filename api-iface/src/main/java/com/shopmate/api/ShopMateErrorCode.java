@@ -10,9 +10,4 @@ public enum ShopMateErrorCode {
      * A network connection error occurred.
      */
     CONNECTION_ERROR,
-
-    /**
-     * An internal exception occurred.
-     */
-    INTERNAL_ERROR,
 }

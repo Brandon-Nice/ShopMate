@@ -1,15 +1,15 @@
-package com.shopmate.api;
+package com.shopmate.api.model.result;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 import com.shopmate.api.ShopMateSession;
 import com.shopmate.api.model.list.ShoppingList;
 
-public class ShopMateLoginResult {
+public class LogInResult {
 
     private final ShopMateSession session;
-    private final ImmutableSet<ShoppingList> shoppingLists;
+    private final ImmutableMap<Long, ShoppingList> shoppingLists;
 
-    public ShopMateLoginResult(ShopMateSession session, ImmutableSet<ShoppingList> shoppingLists) {
+    public LogInResult(ShopMateSession session, ImmutableMap<Long, ShoppingList> shoppingLists) {
         this.session = session;
         this.shoppingLists = shoppingLists;
     }
@@ -22,9 +22,9 @@ public class ShopMateLoginResult {
     }
 
     /**
-     * @return The shopping lists that the user is a member of.
+     * @return The shopping lists that the user is a member of, keyed by list ID.
      */
-    public ImmutableSet<ShoppingList> getShoppingLists() {
+    public ImmutableMap<Long, ShoppingList> getShoppingLists() {
         return shoppingLists;
     }
 }

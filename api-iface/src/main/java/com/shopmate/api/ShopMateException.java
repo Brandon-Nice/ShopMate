@@ -22,14 +22,6 @@ public class ShopMateException extends Exception {
         this.code = code;
     }
 
-    public ShopMateException(String message) {
-        this(ShopMateErrorCode.INTERNAL_ERROR, message);
-    }
-
-    public ShopMateException(Throwable cause) {
-        this(ShopMateErrorCode.INTERNAL_ERROR, cause);
-    }
-
     public ShopMateErrorCode getCode() {
         return code;
     }

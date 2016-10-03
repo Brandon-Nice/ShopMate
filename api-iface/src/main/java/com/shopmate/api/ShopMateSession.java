@@ -1,28 +1,29 @@
 package com.shopmate.api;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.shopmate.api.model.list.ShoppingList;
-
 /**
- * Performs ShopMate API commands within a user session context.
+ * Represents a ShopMate session token.
  */
-public interface ShopMateSession {
+public class ShopMateSession {
+
+    private final String fbid;
+    private final String sessionToken;
+
+    public ShopMateSession(String fbid, String sessionToken) {
+        this.fbid = fbid;
+        this.sessionToken = sessionToken;
+    }
 
     /**
-     * @return The logged in user's FBID.
+     * @return The FBID of the logged in user.
      */
-    String getUserId();
+    public String getUserFbid() {
+        return fbid;
+    }
 
     /**
-     * Asynchronously creates a shopping list.
-     * @param list The requested parameters for the list to create.
-     * @return The actual list that was created.
+     * @return The session token used to identify the user's session (implementation-dependent).
      */
-    ListenableFuture<ShoppingList> createShoppingListAsync(ShoppingList list);
-
-    /**
-     * Asynchronously gets the shopping lists that the user is a member of.
-     */
-    ListenableFuture<ImmutableSet<ShoppingList>> getShoppingListsAsync();
+    public String getSessionToken() {
+        return sessionToken;
+    }
 }
