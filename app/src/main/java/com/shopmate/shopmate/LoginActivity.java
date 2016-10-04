@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
             fromNavMenu = getIntent().getExtras().getBoolean("FromNavMenu");
         }
 
-        if (fromNavMenu == false)
+        if (fromNavMenu == false && AccessToken.getCurrentAccessToken() != null)
         {
             loginUser(AccessToken.getCurrentAccessToken().getUserId());
         }
