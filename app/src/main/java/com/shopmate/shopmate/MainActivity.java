@@ -1,5 +1,6 @@
 package com.shopmate.shopmate;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,7 +24,6 @@ import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -85,33 +85,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             }).executeAsync();
-            /*
-            new GraphRequest(AccessToken.getCurrentAccessToken(), "/me/picture?type=large", null,
-                    HttpMethod.GET, new GraphRequest.Callback() {
-                public void onCompleted(GraphResponse response) {
-                    //handle the response
-                    String URL = "";
-                    try {
-                        final JSONObject jsonObject = response.getJSONObject();
-                        System.out.println("jsonArray" + jsonObject.toString());
-                        String url = jsonObject.getString("url");
-                        System.out.println("url" + url);
-
-
-                        JSONObject data = jsonArray.getJSONObject("data");
-                        System.out.println("data" + data);
-                        ImageView user_picture = (ImageView) findViewById(R.id.userimageView);
-                        URL = data.getString("url");
-                        System.out.println("URL" + URL);
-                        Picasso.with(getApplicationContext()).load(URL).into(user_picture);
-
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).executeAsync();
-            */
         }
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -163,8 +136,12 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
+        if (id == R.id.nav_logout) {
+            // Handle the logout action
+            Intent init = new Intent(MainActivity.this, LoginActivity.class);
+            init.putExtra("FromNavMenu", true);
+            startActivity(init);
+
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {

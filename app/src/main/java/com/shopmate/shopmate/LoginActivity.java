@@ -30,7 +30,14 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
 
-        if(isLoggedIn()) {
+        boolean fromNavMenu = false;
+        if (getIntent().hasExtra("FromNavMenu"))
+        {
+            fromNavMenu = getIntent().getExtras().getBoolean("FromNavMenu");
+        }
+
+        if (fromNavMenu == false)
+        {
             loginUser(AccessToken.getCurrentAccessToken().getUserId());
         }
 
