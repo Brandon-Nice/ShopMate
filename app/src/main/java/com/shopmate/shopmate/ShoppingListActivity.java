@@ -2,6 +2,7 @@ package com.shopmate.shopmate;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -26,7 +27,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         // These are just some mock items to add to the list.
         // TODO retrieve these items from the database
-        final List<String> items = new ArrayList<String>();
+        final List<String> items = new ArrayList<>();
         for (int i = 0; i < 10; i ++) {
             items.add("Food " + i);
         }
@@ -34,10 +35,12 @@ public class ShoppingListActivity extends AppCompatActivity {
         // Creates an adapter which is used maintain and render a list of items
         ListView shoppingList = (ListView) findViewById(R.id.shoppingList);
         final ShoppingListItemAdapter shoppingListItemAdapter = new ShoppingListItemAdapter(this, R.layout.shopping_list_item, items);
+        assert shoppingList != null;
         shoppingList.setAdapter(shoppingListItemAdapter);
 
         // Adds a new item to this shopping list when the button is pressed
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        assert fab != null;
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -53,18 +56,19 @@ public class ShoppingListActivity extends AppCompatActivity {
         private List<String> items;
         private Context context;
 
-        public ShoppingListItemAdapter(Context context, int resourceId, List<String> items) {
+        ShoppingListItemAdapter(Context context, int resourceId, List<String> items) {
             super(context, resourceId, items);
             this.items = items;
             this.context = context;
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View view;
             if (convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                view = inflater.inflate(R.layout.shopping_list_item, null);
+                view = inflater.inflate(R.layout.shopping_list_item, parent);
             } else {
                 view = convertView;
             }
@@ -77,5 +81,4 @@ public class ShoppingListActivity extends AppCompatActivity {
             return view;
         }
     }
-
 }
