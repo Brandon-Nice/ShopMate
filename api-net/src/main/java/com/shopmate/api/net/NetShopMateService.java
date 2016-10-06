@@ -17,6 +17,7 @@ import com.shopmate.api.net.model.request.CreateListRequest;
 import com.shopmate.api.net.model.request.LogInRequest;
 import com.shopmate.api.net.model.response.AllListsResponse;
 import com.shopmate.api.net.model.response.ApiResponse;
+import com.shopmate.api.net.model.response.ErrorCodes;
 import com.shopmate.api.net.model.response.LogInResponse;
 import com.shopmate.api.net.model.response.ShoppingListResponse;
 
@@ -58,7 +59,6 @@ public class NetShopMateService implements ShopMateService {
                 Type responseType = new TypeToken<ApiResponse<LogInResponse>>(){}.getType();
                 ApiResponse<LogInResponse> response = post(LoginUrl, request, responseType);
                 throwIfRequestFailed(response);
-
                 return response.getResult().get().toLogInResult();
             }
         });
@@ -73,7 +73,6 @@ public class NetShopMateService implements ShopMateService {
                 Type responseType = new TypeToken<ApiResponse<ShoppingListResponse>>(){}.getType();
                 ApiResponse<ShoppingListResponse> response = post(CreateListUrl, request, responseType);
                 throwIfRequestFailed(response);
-
                 ShoppingListResponse result = response.getResult().get();
                 return new CreateShoppingListResult(result.getId(), result.toShoppingList());
             }
@@ -89,7 +88,6 @@ public class NetShopMateService implements ShopMateService {
                 Type responseType = new TypeToken<ApiResponse<AllListsResponse>>(){}.getType();
                 ApiResponse<AllListsResponse> response = post(AllListsUrl, request, responseType);
                 throwIfRequestFailed(response);
-
                 return response.getResult().get().toShoppingListMap();
             }
         });
@@ -105,8 +103,9 @@ public class NetShopMateService implements ShopMateService {
 
     private <TResult> void throwIfRequestFailed(ApiResponse<TResult> response) throws ShopMateException {
         if (!response.getResult().isPresent()) {
-            // TODO: Check response code
-            throw new ShopMateException(ShopMateErrorCode.INVALID_TOKEN, "Invalid login token");
+            ShopMateErrorCode code = ErrorCodes.getErrorCode(response.getError().orNull());
+            String message = ErrorCodes.getErrorMessage(code);
+            throw new ShopMateException(code, message);
         }
     }
 }
