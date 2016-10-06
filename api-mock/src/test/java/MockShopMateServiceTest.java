@@ -1,5 +1,4 @@
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.shopmate.api.MockShopMateService;
 import com.shopmate.api.ShopMateErrorCode;
 import com.shopmate.api.ShopMateException;
