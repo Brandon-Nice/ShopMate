@@ -1,9 +1,12 @@
 package com.shopmate.shopmate;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,7 +16,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -26,6 +32,8 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -90,8 +98,50 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        //make a dummy list for the home screen
+        ListView listview = (ListView) findViewById(R.id.userlistView);
+        //using arraylists to store data just for the sake of having data
+        //TODO: Create a custom Adapter class to take in HashMaps instead to make this more efficient
+        ArrayList<String> listItems = new ArrayList<String>();
+        listItems.add("Bread");
+        listItems.add("Milk");
+        listItems.add("Eggs");
+        listItems.add("Cheese");
+        listItems.add("Tissue Paper");
+
+        ArrayList<String> listPrices = new ArrayList<String>();
+        listPrices.add("$5.00");
+        listPrices.add("$3.08");
+        listPrices.add("$2.99");
+        listPrices.add("$3.98");
+        listPrices.add("$4.00");
+
+
+        ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, listItems);
+        listview.setAdapter(a);
+
+//        ArrayAdapter b = new ArrayAdapter(this, R.layout.rowlayout, R.id.subitem, listPrices);
+//        listview.setAdapter(b);
 
     }
+
+//    @Override
+//    public View getView(int position, View convertView, ViewGroup parent) {
+//        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        View rowView = inflater.inflate(R.layout.rowlayout, parent, false);
+//        TextView textView = (TextView) rowView.findViewById(R.id.label);
+//        ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
+//        textView.setText(values[position]);
+//        // change the icon for Windows and iPhone
+//        String s = values[position];
+//        if (s.startsWith("iPhone")) {
+//            imageView.setImageResource(R.drawable.no);
+//        } else {
+//            imageView.setImageResource(R.drawable.ok);
+//        }
+//
+//        return rowView;
+//    }
 
     public boolean isLoggedIn() {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
