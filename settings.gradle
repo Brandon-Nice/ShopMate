@@ -1,1 +1,1 @@
-include ':app', ':api-iface', ':api-mock'
+include ':app', ':api-iface', ':api-mock', ':api-net'

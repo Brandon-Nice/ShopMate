@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/ShopMate.iml" filepath="$PROJECT_DIR$/ShopMate.iml" />
       <module fileurl="file://$PROJECT_DIR$/api-iface/api-iface.iml" filepath="$PROJECT_DIR$/api-iface/api-iface.iml" />
       <module fileurl="file://$PROJECT_DIR$/api-mock/api-mock.iml" filepath="$PROJECT_DIR$/api-mock/api-mock.iml" />
+      <module fileurl="file://$PROJECT_DIR$/api-net/api-net.iml" filepath="$PROJECT_DIR$/api-net/api-net.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
