@@ -1,5 +1,4 @@
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.shopmate.api.MockShopMateService;
 import com.shopmate.api.ShopMateErrorCode;
 import com.shopmate.api.ShopMateException;
@@ -16,6 +15,8 @@ import org.junit.Test;
 import java.util.concurrent.ExecutionException;
 
 public class MockShopMateServiceTest {
+
+    private static final String TestListTitle = "Test List";
 
     private ShopMateService service;
 
@@ -47,22 +48,18 @@ public class MockShopMateServiceTest {
     @Test
     public void testCreateShoppingListAsync() throws ExecutionException, InterruptedException {
         ShopMateSession session = service.logInAsync("foo").get().getSession();
-
-        ShoppingList mockList = createMockList(session);
-        ShoppingList list = service.createShoppingListAsync(session, mockList).get().getList();
+        ShoppingList list = service.createShoppingListAsync(session, TestListTitle).get().getList();
 
         Assert.assertEquals(session.getUserFbid(), list.getCreatorId());
-        Assert.assertEquals(mockList.getTitle(), list.getTitle());
-        Assert.assertTrue(list.getMemberIds().containsAll(mockList.getMemberIds()));
+        Assert.assertEquals(TestListTitle, list.getTitle());
+        Assert.assertTrue(list.getMemberIds().contains(session.getUserFbid()));
         Assert.assertEquals(0, list.getItemIds().size());
     }
 
     @Test
     public void testCreateAndGetShoppingList() throws ExecutionException, InterruptedException {
         ShopMateSession session = service.logInAsync("foo").get().getSession();
-
-        ShoppingList mockList = createMockList(session);
-        CreateShoppingListResult result = service.createShoppingListAsync(session, mockList).get();
+        CreateShoppingListResult result = service.createShoppingListAsync(session, TestListTitle).get();
         long id = result.getId();
 
         ImmutableMap<Long, ShoppingList> lists = service.getShoppingListsAsync(session).get();
@@ -71,19 +68,16 @@ public class MockShopMateServiceTest {
 
         ShoppingList list = lists.get(id);
         Assert.assertEquals(session.getUserFbid(), list.getCreatorId());
-        Assert.assertEquals(mockList.getTitle(), list.getTitle());
-        Assert.assertTrue(list.getMemberIds().containsAll(mockList.getMemberIds()));
+        Assert.assertEquals(TestListTitle, list.getTitle());
+        Assert.assertTrue(list.getMemberIds().contains(session.getUserFbid()));
         Assert.assertEquals(0, list.getItemIds().size());
     }
 
     @Test
     public void testCreateAndGetMultipleShoppingLists() throws ExecutionException, InterruptedException {
         ShopMateSession session = service.logInAsync("foo").get().getSession();
-
-        ShoppingList mockList1 = createMockList(session);
-        ShoppingList mockList2 = createMockList(session);
-        CreateShoppingListResult result1 = service.createShoppingListAsync(session, mockList1).get();
-        CreateShoppingListResult result2 = service.createShoppingListAsync(session, mockList2).get();
+        CreateShoppingListResult result1 = service.createShoppingListAsync(session, TestListTitle).get();
+        CreateShoppingListResult result2 = service.createShoppingListAsync(session, TestListTitle).get();
 
         Assert.assertNotEquals(result1.getId(), result2.getId());
 
@@ -91,13 +85,5 @@ public class MockShopMateServiceTest {
         Assert.assertEquals(2, lists.size());
         Assert.assertTrue(lists.containsKey(result1.getId()));
         Assert.assertTrue(lists.containsKey(result2.getId()));
-    }
-
-    private static ShoppingList createMockList(ShopMateSession session) {
-        return new ShoppingList(
-                session.getUserFbid(),
-                "Test List",
-                ImmutableSet.of("1", "2", "3"),
-                ImmutableSet.<Long>of());
     }
 }
