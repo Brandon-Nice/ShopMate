@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity
         ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, listItems);
         listview.setAdapter(a);
 
+
 //        ArrayAdapter b = new ArrayAdapter(this, R.layout.rowlayout, R.id.subitem, listPrices);
 //        listview.setAdapter(b);
 
