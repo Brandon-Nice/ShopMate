@@ -13,7 +13,27 @@
     tools:showIn="@layout/app_bar_main">
 
     <TextView
+        android:text="List 1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:textSize="20dp"
+        android:id="@+id/listTitle" />
+
+    <Button
+        android:text="+ New List"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="59dp"
+        android:id="@+id/addNewListButton" />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/listTitle"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/addNewListButton"
+        android:id="@+id/userlistView" />
+
 </RelativeLayout>

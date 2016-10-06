@@ -33,12 +33,14 @@
         <activity android:name="com.facebook.FacebookActivity"
             android:configChanges=
                 "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:label="@string/app_name" />
         <activity
             android:name=".AddItemActivity"
             android:label="@string/title_activity_add_item"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".ShoppingListActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
