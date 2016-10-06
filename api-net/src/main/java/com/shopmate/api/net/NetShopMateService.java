@@ -65,11 +65,11 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<CreateShoppingListResult> createShoppingListAsync(final ShopMateSession session, final ShoppingList list) {
+    public ListenableFuture<CreateShoppingListResult> createShoppingListAsync(final ShopMateSession session, final String title) {
         return ThreadPool.submit(new Callable<CreateShoppingListResult>() {
             @Override
             public CreateShoppingListResult call() throws Exception {
-                CreateListRequest request = new CreateListRequest(session.getSessionToken(), list.getTitle());
+                CreateListRequest request = new CreateListRequest(session.getSessionToken(), title);
                 Type responseType = new TypeToken<ApiResponse<ShoppingListResponse>>(){}.getType();
                 ApiResponse<ShoppingListResponse> response = post(CreateListUrl, request, responseType);
                 throwIfRequestFailed(response);

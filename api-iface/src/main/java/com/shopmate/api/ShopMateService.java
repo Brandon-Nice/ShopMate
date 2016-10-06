@@ -21,10 +21,10 @@ public interface ShopMateService {
     /**
      * Asynchronously requests to create a shopping list.
      * @param session The session to create the list under.
-     * @param list The requested parameters for the list to create.
+     * @param title The title of the list to create.
      * @return The actual shopping list that was created.
      */
-    ListenableFuture<CreateShoppingListResult> createShoppingListAsync(ShopMateSession session, ShoppingList list);
+    ListenableFuture<CreateShoppingListResult> createShoppingListAsync(ShopMateSession session, String title);
 
     /**
      * Asynchronously gets the shopping lists that the user is a member of.

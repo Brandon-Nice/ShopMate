@@ -28,11 +28,11 @@ public class MockShopMateService implements ShopMateService {
     @Override
     public ListenableFuture<CreateShoppingListResult> createShoppingListAsync(
             ShopMateSession session,
-            final ShoppingList list) {
+            final String title) {
         return Futures.transformAsync(getState(session), new AsyncFunction<MockShopMateState, CreateShoppingListResult>() {
             @Override
             public ListenableFuture<CreateShoppingListResult> apply(MockShopMateState input) throws Exception {
-                return input.createShoppingListAsync(list);
+                return input.createShoppingListAsync(title);
             }
         });
     }
@@ -67,11 +67,11 @@ public class MockShopMateService implements ShopMateService {
             this.session = session;
         }
 
-        public synchronized ListenableFuture<CreateShoppingListResult> createShoppingListAsync(ShoppingList list) {
+        public synchronized ListenableFuture<CreateShoppingListResult> createShoppingListAsync(String title) {
             ShoppingList newList = new ShoppingList(
                     session.getUserFbid(),
-                    list.getTitle(),
-                    list.getMemberIds(),
+                    title,
+                    ImmutableSet.of(session.getUserFbid()),
                     ImmutableSet.<Long>of());
             long id = nextId++;
             shoppingLists.put(id, newList);

@@ -20,6 +20,8 @@ public class NetShopMateServiceTest {
     private static final String TestToken = "EAAQZAwjV0NNsBAHIpFiHYPEzvp1hgKj3KvfkDLhkOtaQJZCIfZCy8jP4V8cMnYOBQJOCgA2E4HKMCqJNcNGRgweqNmuv8CzFmqvbOHSimFD8ZCoSPPo3F6xSnqtq3rRd96G03ZBZC9hkZCtZAXFshKUJEZA5OONekZByoN4ECFoePaASdbhV3ajNoZA";
     private static final String TestId = "136682413460238";
 
+    private static final String TestListName = "Test List";
+
     private ShopMateService service;
 
     @Before
@@ -41,12 +43,8 @@ public class NetShopMateServiceTest {
     public void testCreateShoppingListAsync() throws ExecutionException, InterruptedException {
         LogInResult logIn = service.logInAsync(TestToken).get();
         ShopMateSession session = logIn.getSession();
-        CreateShoppingListResult result = service.createShoppingListAsync(session, new ShoppingList(
-                session.getUserFbid(),
-                "Test List",
-                ImmutableSet.<String>of(),
-                ImmutableSet.<Long>of())).get();
-        Assert.assertEquals(result.getList().getTitle(), "Test List");
+        CreateShoppingListResult result = service.createShoppingListAsync(session, TestListName).get();
+        Assert.assertEquals(result.getList().getTitle(), TestListName);
         Assert.assertEquals(result.getList().getCreatorId(), TestId);
         Assert.assertTrue(result.getList().getMemberIds().contains(TestId));
     }
