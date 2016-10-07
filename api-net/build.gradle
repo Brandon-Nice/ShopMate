@@ -4,7 +4,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':api-iface')
     compile 'com.google.code.gson:gson:2.7'
-    compile 'org.apache.httpcomponents:httpclient:4.5.2'
     compile 'junit:junit:4.12'
 }
 

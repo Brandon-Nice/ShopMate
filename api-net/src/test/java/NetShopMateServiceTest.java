@@ -16,7 +16,7 @@ public class NetShopMateServiceTest {
 
     // Set this to a token from a test user for testing to work...
     // TODO: Create a dummy token on the server or something which always validates?
-    private static final String TestToken = "EAAQZAwjV0NNsBAHIpFiHYPEzvp1hgKj3KvfkDLhkOtaQJZCIfZCy8jP4V8cMnYOBQJOCgA2E4HKMCqJNcNGRgweqNmuv8CzFmqvbOHSimFD8ZCoSPPo3F6xSnqtq3rRd96G03ZBZC9hkZCtZAXFshKUJEZA5OONekZByoN4ECFoePaASdbhV3ajNoZA";
+    private static final String TestToken = "EAAQZAwjV0NNsBAOU0TxDsLzEXRg3wR5CpIyeeNhwwKtN2dyVn5TIDA1xCExQMqA8Pjo7UxpPInZAqmZAekQEOIxKTwENVld3avc5yyNZCC85FlIm7s3jxIeVMlP0RkzWEZBfC1nXNjtleEiDUCMZBteEROAHprtvPCobfNpeU7FjhkrEs3e1M8";
     private static final String TestId = "136682413460238";
 
     private static final String TestListName = "Test List";
