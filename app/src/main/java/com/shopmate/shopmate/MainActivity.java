@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(Throwable t) {
+                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
             }
         });
 
