@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -106,11 +107,18 @@ public class MainActivity extends AppCompatActivity
 
         final ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, new ArrayList<String>());
         listview.setAdapter(a);
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(view.getContext(), ShoppingListActivity.class);
+                i.putExtra("title", (String)parent.getItemAtPosition(position));
+                startActivity(i);
+            }
+        });
 
         Futures.addCallback(ShopMateServiceProvider.get().logInAsync(AccessToken.getCurrentAccessToken().getToken()), new FutureCallback<LogInResult>() {
             @Override
             public void onSuccess(LogInResult result) {
-                Snackbar.make(listview, "success", Snackbar.LENGTH_LONG).show();
                 final ArrayList<String> tmp = new ArrayList<String>();
                 shopSess = result.getSession();
                 for (ShoppingList i : result.getShoppingLists().values()) {
@@ -127,7 +135,6 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(Throwable t) {
-                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
             }
         });
 
@@ -141,9 +148,10 @@ public class MainActivity extends AppCompatActivity
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                a.add(tmp);
+                                a.insert(tmp, 0);
                             }
                         });
+                        Snackbar.make(listview, "success", Snackbar.LENGTH_LONG).show();
                     }
 
                     @Override

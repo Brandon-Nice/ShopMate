@@ -1,5 +1,6 @@
 package com.shopmate.shopmate;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,8 +24,12 @@ public class AddItemActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, name.getText(), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (name.getText().length() != 0) {
+                    Intent res = new Intent();
+                    res.putExtra("item", name.getText().toString());
+                    setResult(RESULT_OK, res);
+                }
+                finish();
             }
         });
         name = (EditText)findViewById(R.id.editText);
