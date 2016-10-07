@@ -17,7 +17,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,6 +30,13 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.shopmate.api.ShopMateServiceProvider;
+import com.shopmate.api.ShopMateSession;
+import com.shopmate.api.model.list.ShoppingList;
+import com.shopmate.api.model.result.CreateShoppingListResult;
+import com.shopmate.api.model.result.LogInResult;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -40,6 +49,8 @@ public class MainActivity extends AppCompatActivity
 
     static LoginButton loginButton;
     static CallbackManager callbackManager;
+    static int i = 1;
+    static ShopMateSession shopSess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,19 +59,10 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         if (isLoggedIn()) {
@@ -99,31 +101,67 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         //make a dummy list for the home screen
-        ListView listview = (ListView) findViewById(R.id.userlistView);
+        final ListView listview = (ListView) findViewById(R.id.userlistView);
         //using arraylists to store data just for the sake of having data
         //TODO: Create a custom Adapter class to take in HashMaps instead to make this more efficient
-        ArrayList<String> listItems = new ArrayList<String>();
-        listItems.add("Bread");
-        listItems.add("Milk");
-        listItems.add("Eggs");
-        listItems.add("Cheese");
-        listItems.add("Tissue Paper");
 
-        ArrayList<String> listPrices = new ArrayList<String>();
-        listPrices.add("$5.00");
-        listPrices.add("$3.08");
-        listPrices.add("$2.99");
-        listPrices.add("$3.98");
-        listPrices.add("$4.00");
-
-
-        ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, listItems);
+        final ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, new ArrayList<String>());
         listview.setAdapter(a);
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(view.getContext(), ShoppingListActivity.class);
+                i.putExtra("title", (String)parent.getItemAtPosition(position));
+                startActivity(i);
+            }
+        });
 
+        Futures.addCallback(ShopMateServiceProvider.get().logInAsync(AccessToken.getCurrentAccessToken().getToken()), new FutureCallback<LogInResult>() {
+            @Override
+            public void onSuccess(LogInResult result) {
+                final ArrayList<String> tmp = new ArrayList<String>();
+                shopSess = result.getSession();
+                for (ShoppingList i : result.getShoppingLists().values()) {
+                    tmp.add(i.getTitle());
+                }
 
-//        ArrayAdapter b = new ArrayAdapter(this, R.layout.rowlayout, R.id.subitem, listPrices);
-//        listview.setAdapter(b);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        a.addAll(tmp);
+                    }
+                });
+            }
 
+            @Override
+            public void onFailure(Throwable t) {
+                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
+            }
+        });
+
+        ((Button)findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Futures.addCallback(ShopMateServiceProvider.get().createShoppingListAsync(shopSess, "New List" + Integer.toString(i++)), new FutureCallback<CreateShoppingListResult>() {
+                    @Override
+                    public void onSuccess(CreateShoppingListResult result) {
+                        final String tmp = result.getList().getTitle();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                a.insert(tmp, 0);
+                            }
+                        });
+                        Snackbar.make(listview, "success", Snackbar.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
     }
 
 //    @Override

@@ -9,5 +9,8 @@
     <string name="facebook_app_id">1154221818000603</string>
 
     <string name="user_name">User</string>
-    <string name="title_activity_add_item">AddItemActivity</string>
+    <string name="title_activity_add_item">Add An Item</string>
+
+    <!--access token for the test user-->
+    <string name="test_token">EAAQZAwjV0NNsBAHYXdCZAwmimd9NCx2xcpeHOEVRA5dmgfj6GtYJRnezYJ8qPH4qmBUxtzsuV30pSJQ0ljoe6a8wt1ZAvdEMhZBex2MyL4xa3dtZCZAASfZCN9AwfdhGn1DIWrJWpSA6bfkwBVYX5YtR4KdmIB1MtzcleBTjLf6vCZCd23mhjbDI</string>
 </resources>
