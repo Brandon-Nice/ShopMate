@@ -222,11 +222,9 @@ public class MainActivity extends AppCompatActivity
             init.putExtra("FromNavMenu", true);
             startActivity(init);
 
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_shared) {
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_personal) {
 
         } else if (id == R.id.nav_share) {
 
