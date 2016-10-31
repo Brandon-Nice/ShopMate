@@ -8,17 +8,13 @@ import com.google.gson.reflect.TypeToken;
 import com.shopmate.api.ShopMateErrorCode;
 import com.shopmate.api.ShopMateException;
 import com.shopmate.api.ShopMateService;
-import com.shopmate.api.ShopMateSession;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListResult;
-import com.shopmate.api.model.result.LogInResult;
 import com.shopmate.api.net.model.request.AllListsRequest;
 import com.shopmate.api.net.model.request.CreateListRequest;
-import com.shopmate.api.net.model.request.LogInRequest;
 import com.shopmate.api.net.model.response.AllListsResponse;
 import com.shopmate.api.net.model.response.ApiResponse;
 import com.shopmate.api.net.model.response.ErrorCodes;
-import com.shopmate.api.net.model.response.LogInResponse;
 import com.shopmate.api.net.model.response.ShoppingListResponse;
 
 import java.io.IOException;
@@ -51,25 +47,11 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<LogInResult> logInAsync(final String fbToken) {
-        return ThreadPool.submit(new Callable<LogInResult>() {
-            @Override
-            public LogInResult call() throws ShopMateException {
-                LogInRequest request = new LogInRequest(fbToken);
-                Type responseType = new TypeToken<ApiResponse<LogInResponse>>(){}.getType();
-                ApiResponse<LogInResponse> response = post(LoginUrl, request, responseType);
-                throwIfRequestFailed(response);
-                return response.getResult().get().toLogInResult();
-            }
-        });
-    }
-
-    @Override
-    public ListenableFuture<CreateShoppingListResult> createShoppingListAsync(final ShopMateSession session, final String title) {
+    public ListenableFuture<CreateShoppingListResult> createShoppingListAsync(final String fbToken, final String title) {
         return ThreadPool.submit(new Callable<CreateShoppingListResult>() {
             @Override
             public CreateShoppingListResult call() throws Exception {
-                CreateListRequest request = new CreateListRequest(session.getSessionToken(), title);
+                CreateListRequest request = new CreateListRequest(fbToken, title);
                 Type responseType = new TypeToken<ApiResponse<ShoppingListResponse>>(){}.getType();
                 ApiResponse<ShoppingListResponse> response = post(CreateListUrl, request, responseType);
                 throwIfRequestFailed(response);
@@ -80,11 +62,11 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<ImmutableMap<Long, ShoppingList>> getShoppingListsAsync(final ShopMateSession session) {
+    public ListenableFuture<ImmutableMap<Long, ShoppingList>> getShoppingListsAsync(final String fbToken) {
         return ThreadPool.submit(new Callable<ImmutableMap<Long, ShoppingList>>() {
             @Override
             public ImmutableMap<Long, ShoppingList> call() throws Exception {
-                AllListsRequest request = new AllListsRequest(session.getSessionToken());
+                AllListsRequest request = new AllListsRequest(fbToken);
                 Type responseType = new TypeToken<ApiResponse<AllListsResponse>>(){}.getType();
                 ApiResponse<AllListsResponse> response = post(AllListsUrl, request, responseType);
                 throwIfRequestFailed(response);

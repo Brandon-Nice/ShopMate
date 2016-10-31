@@ -1,9 +1,7 @@
 import com.google.common.collect.ImmutableMap;
 import com.shopmate.api.ShopMateService;
-import com.shopmate.api.ShopMateSession;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListResult;
-import com.shopmate.api.model.result.LogInResult;
 import com.shopmate.api.net.NetShopMateService;
 
 import org.junit.Assert;
@@ -16,7 +14,7 @@ public class NetShopMateServiceTest {
 
     // Set this to a token from a test user for testing to work...
     // TODO: Create a dummy token on the server or something which always validates?
-    private static final String TestToken = "EAAQZAwjV0NNsBAOU0TxDsLzEXRg3wR5CpIyeeNhwwKtN2dyVn5TIDA1xCExQMqA8Pjo7UxpPInZAqmZAekQEOIxKTwENVld3avc5yyNZCC85FlIm7s3jxIeVMlP0RkzWEZBfC1nXNjtleEiDUCMZBteEROAHprtvPCobfNpeU7FjhkrEs3e1M8";
+    private static final String TestToken = "EAAQZAwjV0NNsBAKHmMLVfmE29qxjAQOhHJO5PXocvPk5NOwbAOCgZC7JaLJ63ZAQTwvaHhGE37KGGSalv9OUjyd8QGemd0EuwcebkkiXeI3pZB277ZBplhGgwwtXvdruogqBwZBOx773A4JirAh0pHdbWgzDRkzDMiCJkCWAh9X0dQhE2gNolU";
     private static final String TestId = "136682413460238";
 
     private static final String TestListName = "Test List";
@@ -29,20 +27,8 @@ public class NetShopMateServiceTest {
     }
 
     @Test
-    public void testLogInAsync() throws ExecutionException, InterruptedException {
-        LogInResult result = service.logInAsync(TestToken).get();
-        Assert.assertEquals(TestToken, result.getSession().getSessionToken());
-        Assert.assertEquals(TestId, result.getSession().getUserFbid());
-        for (ShoppingList list : result.getShoppingLists().values()) {
-            Assert.assertTrue(list.getMemberIds().contains(TestId));
-        }
-    }
-
-    @Test
     public void testCreateShoppingListAsync() throws ExecutionException, InterruptedException {
-        LogInResult logIn = service.logInAsync(TestToken).get();
-        ShopMateSession session = logIn.getSession();
-        CreateShoppingListResult result = service.createShoppingListAsync(session, TestListName).get();
+        CreateShoppingListResult result = service.createShoppingListAsync(TestToken, TestListName).get();
         Assert.assertEquals(result.getList().getTitle(), TestListName);
         Assert.assertEquals(result.getList().getCreatorId(), TestId);
         Assert.assertTrue(result.getList().getMemberIds().contains(TestId));
@@ -50,9 +36,7 @@ public class NetShopMateServiceTest {
 
     @Test
     public void testGetShoppingListsAsync() throws ExecutionException, InterruptedException {
-        LogInResult logIn = service.logInAsync(TestToken).get();
-        ShopMateSession session = logIn.getSession();
-        ImmutableMap<Long, ShoppingList> lists = service.getShoppingListsAsync(session).get();
+        ImmutableMap<Long, ShoppingList> lists = service.getShoppingListsAsync(TestToken).get();
         for (ShoppingList list : lists.values()) {
             Assert.assertTrue(list.getMemberIds().contains(TestId));
         }

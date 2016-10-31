@@ -30,13 +30,12 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.shopmate.api.ShopMateServiceProvider;
-import com.shopmate.api.ShopMateSession;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListResult;
-import com.shopmate.api.model.result.LogInResult;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity
     static LoginButton loginButton;
     static CallbackManager callbackManager;
     static int i = 1;
-    static ShopMateSession shopSess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,12 +114,12 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        Futures.addCallback(ShopMateServiceProvider.get().logInAsync(AccessToken.getCurrentAccessToken().getToken()), new FutureCallback<LogInResult>() {
+        String fbToken = AccessToken.getCurrentAccessToken().getToken();
+        Futures.addCallback(ShopMateServiceProvider.get().getShoppingListsAsync(fbToken), new FutureCallback<ImmutableMap<Long, ShoppingList>>() {
             @Override
-            public void onSuccess(LogInResult result) {
+            public void onSuccess(ImmutableMap<Long, ShoppingList> result) {
                 final ArrayList<String> tmp = new ArrayList<String>();
-                shopSess = result.getSession();
-                for (ShoppingList i : result.getShoppingLists().values()) {
+                for (ShoppingList i : result.values()) {
                     tmp.add(i.getTitle());
                 }
 
@@ -142,7 +140,8 @@ public class MainActivity extends AppCompatActivity
         ((Button)findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Futures.addCallback(ShopMateServiceProvider.get().createShoppingListAsync(shopSess, "New List" + Integer.toString(i++)), new FutureCallback<CreateShoppingListResult>() {
+                String fbToken = AccessToken.getCurrentAccessToken().getToken();
+                Futures.addCallback(ShopMateServiceProvider.get().createShoppingListAsync(fbToken, "New List" + Integer.toString(i++)), new FutureCallback<CreateShoppingListResult>() {
                     @Override
                     public void onSuccess(CreateShoppingListResult result) {
                         final String tmp = result.getList().getTitle();
