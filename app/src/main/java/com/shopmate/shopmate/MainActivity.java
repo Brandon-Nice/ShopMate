@@ -1,12 +1,8 @@
 package com.shopmate.shopmate;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -36,6 +31,7 @@ import com.google.common.util.concurrent.Futures;
 import com.shopmate.api.ShopMateServiceProvider;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListResult;
+import com.shopmate.api.model.result.GetAllShoppingListsResult;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -115,11 +111,11 @@ public class MainActivity extends AppCompatActivity
         });
 
         String fbToken = AccessToken.getCurrentAccessToken().getToken();
-        Futures.addCallback(ShopMateServiceProvider.get().getShoppingListsAsync(fbToken), new FutureCallback<ImmutableMap<Long, ShoppingList>>() {
+        Futures.addCallback(ShopMateServiceProvider.get().getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
             @Override
-            public void onSuccess(ImmutableMap<Long, ShoppingList> result) {
+            public void onSuccess(GetAllShoppingListsResult result) {
                 final ArrayList<String> tmp = new ArrayList<String>();
-                for (ShoppingList i : result.values()) {
+                for (ShoppingList i : result.getLists().values()) {
                     tmp.add(i.getTitle());
                 }
 
@@ -141,7 +137,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 String fbToken = AccessToken.getCurrentAccessToken().getToken();
-                Futures.addCallback(ShopMateServiceProvider.get().createShoppingListAsync(fbToken, "New List" + Integer.toString(i++)), new FutureCallback<CreateShoppingListResult>() {
+                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, "New List" + Integer.toString(i++)), new FutureCallback<CreateShoppingListResult>() {
                     @Override
                     public void onSuccess(CreateShoppingListResult result) {
                         final String tmp = result.getList().getTitle();
