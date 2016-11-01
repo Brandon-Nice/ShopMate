@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity
                 startActivity(i);
             }
         });
+        
 
         String fbToken = AccessToken.getCurrentAccessToken().getToken();
         Futures.addCallback(ShopMateServiceProvider.get().getShoppingListsAsync(fbToken), new FutureCallback<ImmutableMap<Long, ShoppingList>>() {
