@@ -48,7 +48,9 @@
         android:layout_height="wrap_content"
         android:id="@+id/itemImp"
         android:layout_alignTop="@+id/itemQty"
-        android:layout_alignEnd="@+id/itemPrice" />
+        android:layout_alignEnd="@+id/itemPrice"
+        android:layout_above="@+id/itemDesc"
+        android:layout_toEndOf="@+id/itemQty" />
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -58,16 +60,9 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/itemName"
-        android:layout_alignBottom="@+id/itemQty" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="150dp"
-        android:id="@+id/itemDesc"
-        android:hint="Description"
-        android:layout_below="@+id/itemQty"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/itemPhoto" />
+        android:layout_alignBottom="@+id/itemQty"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true" />
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -75,6 +70,15 @@
         android:id="@+id/addWalmart"
         android:src="@mipmap/walmart_logo"
         android:layout_below="@+id/itemDesc"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="150dp"
+        android:id="@+id/itemDesc"
+        android:hint="Description"
+        android:layout_below="@+id/itemQty"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
 
