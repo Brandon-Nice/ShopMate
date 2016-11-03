@@ -5,7 +5,9 @@ import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.api.model.result.CreateShoppingListResult;
+import com.shopmate.api.model.result.GetAllInvitesResult;
 import com.shopmate.api.model.result.GetAllShoppingListsResult;
+import com.shopmate.api.model.result.SendInviteResult;
 
 /**
  * Interface for an object which opens connections to the ShopMate API.
@@ -70,4 +72,22 @@ public interface ShopMateService {
      * @return The item.
      */
     ListenableFuture<ShoppingListItem> getItemAsync(String fbToken, long itemId);
+
+    /**
+     * Asynchronously gets all pending invites that the user has sent or received.
+     *
+     * @param fbToken The user's Facebook token.
+     * @return The invites.
+     */
+    ListenableFuture<GetAllInvitesResult> getAllInvites(String fbToken);
+
+    /**
+     * Asynchronously sends an invite for a user to join a list.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param listId The ID of the list to send an invite for.
+     * @param receiverUserId The FBID of the user to send the invite to.
+     * @return Information about the invite that was sent.
+     */
+    ListenableFuture<SendInviteResult> sendInvite(String fbToken, long listId, String receiverUserId);
 }
