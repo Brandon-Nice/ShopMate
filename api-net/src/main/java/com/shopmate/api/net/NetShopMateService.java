@@ -169,7 +169,7 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<SendInviteResult> sendInvite(final String fbToken, final long listId, final String receiverUserId) {
+    public ListenableFuture<SendInviteResult> sendInviteAsync(final String fbToken, final long listId, final String receiverUserId) {
         return ThreadPool.submit(new Callable<SendInviteResult>() {
             @Override
             public SendInviteResult call() throws Exception {
@@ -183,7 +183,7 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<Void> acceptInvite(final String fbToken, final long inviteId) {
+    public ListenableFuture<Void> acceptInviteAsync(final String fbToken, final long inviteId) {
         return ThreadPool.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -198,7 +198,7 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<Void> declineInvite(final String fbToken, final long inviteId) {
+    public ListenableFuture<Void> declineInviteAsync(final String fbToken, final long inviteId) {
         return ThreadPool.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -213,7 +213,7 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<Void> cancelInvite(final String fbToken, final long inviteId) {
+    public ListenableFuture<Void> cancelInviteAsync(final String fbToken, final long inviteId) {
         return ThreadPool.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {

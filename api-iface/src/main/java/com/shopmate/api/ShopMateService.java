@@ -91,7 +91,7 @@ public interface ShopMateService {
      * @param receiverUserId The FBID of the user to send the invite to.
      * @return Information about the invite that was sent.
      */
-    ListenableFuture<SendInviteResult> sendInvite(String fbToken, long listId, String receiverUserId);
+    ListenableFuture<SendInviteResult> sendInviteAsync(String fbToken, long listId, String receiverUserId);
 
     /**
      * Asynchronously accepts an invite that was sent to a user.
@@ -99,7 +99,7 @@ public interface ShopMateService {
      * @param fbToken The user's Facebook token.
      * @param inviteId The ID of the invite to accept.
      */
-    ListenableFuture<Void> acceptInvite(String fbToken, long inviteId);
+    ListenableFuture<Void> acceptInviteAsync(String fbToken, long inviteId);
 
     /**
      * Asynchronously declines an invite that was sent to a user.
@@ -107,7 +107,7 @@ public interface ShopMateService {
      * @param fbToken The user's Facebook token.
      * @param inviteId The ID of the invite to decline.
      */
-    ListenableFuture<Void> declineInvite(String fbToken, long inviteId);
+    ListenableFuture<Void> declineInviteAsync(String fbToken, long inviteId);
 
     /**
      * Asynchronously cancels a pending invite that a user sent.
@@ -115,5 +115,5 @@ public interface ShopMateService {
      * @param fbToken The user's Facebook token.
      * @param inviteId The ID of the invite to cancel.
      */
-    ListenableFuture<Void> cancelInvite(String fbToken, long inviteId);
+    ListenableFuture<Void> cancelInviteAsync(String fbToken, long inviteId);
 }

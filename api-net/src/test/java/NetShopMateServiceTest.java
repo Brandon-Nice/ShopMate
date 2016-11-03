@@ -158,7 +158,7 @@ public class NetShopMateServiceTest {
         service.getAllListsNoItemsAsync(TestToken2).get();
 
         CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
-        SendInviteResult sentInvite = service.sendInvite(TestToken, createdList.getId(), TestId2).get();
+        SendInviteResult sentInvite = service.sendInviteAsync(TestToken, createdList.getId(), TestId2).get();
         long inviteId = sentInvite.getId();
 
         GetAllInvitesResult allInvites1 = service.getAllInvites(TestToken).get();
@@ -214,7 +214,7 @@ public class NetShopMateServiceTest {
         service.getAllListsNoItemsAsync(TestToken2).get();
 
         CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
-        SendInviteResult sentInvite = service.sendInvite(TestToken, createdList.getId(), TestId2).get();
+        SendInviteResult sentInvite = service.sendInviteAsync(TestToken, createdList.getId(), TestId2).get();
         long inviteId = sentInvite.getId();
 
         GetAllInvitesResult allInvites1 = service.getAllInvites(TestToken).get();
@@ -229,7 +229,7 @@ public class NetShopMateServiceTest {
         Assert.assertTrue(outgoingIndex2 < 0);
         Assert.assertTrue(incomingIndex2 >= 0);
 
-        service.acceptInvite(TestToken2, inviteId).get();
+        service.acceptInviteAsync(TestToken2, inviteId).get();
 
         allInvites1 = service.getAllInvites(TestToken).get();
         allInvites2 = service.getAllInvites(TestToken2).get();
@@ -249,7 +249,7 @@ public class NetShopMateServiceTest {
         service.getAllListsNoItemsAsync(TestToken2).get();
 
         CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
-        SendInviteResult sentInvite = service.sendInvite(TestToken, createdList.getId(), TestId2).get();
+        SendInviteResult sentInvite = service.sendInviteAsync(TestToken, createdList.getId(), TestId2).get();
         long inviteId = sentInvite.getId();
 
         GetAllInvitesResult allInvites1 = service.getAllInvites(TestToken).get();
@@ -264,7 +264,7 @@ public class NetShopMateServiceTest {
         Assert.assertTrue(outgoingIndex2 < 0);
         Assert.assertTrue(incomingIndex2 >= 0);
 
-        service.cancelInvite(TestToken, inviteId).get();
+        service.cancelInviteAsync(TestToken, inviteId).get();
 
         allInvites1 = service.getAllInvites(TestToken).get();
         allInvites2 = service.getAllInvites(TestToken2).get();
@@ -284,7 +284,7 @@ public class NetShopMateServiceTest {
         service.getAllListsNoItemsAsync(TestToken2).get();
 
         CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
-        SendInviteResult sentInvite = service.sendInvite(TestToken, createdList.getId(), TestId2).get();
+        SendInviteResult sentInvite = service.sendInviteAsync(TestToken, createdList.getId(), TestId2).get();
         long inviteId = sentInvite.getId();
 
         GetAllInvitesResult allInvites1 = service.getAllInvites(TestToken).get();
@@ -299,7 +299,7 @@ public class NetShopMateServiceTest {
         Assert.assertTrue(outgoingIndex2 < 0);
         Assert.assertTrue(incomingIndex2 >= 0);
 
-        service.declineInvite(TestToken2, inviteId).get();
+        service.declineInviteAsync(TestToken2, inviteId).get();
 
         allInvites1 = service.getAllInvites(TestToken).get();
         allInvites2 = service.getAllInvites(TestToken2).get();
