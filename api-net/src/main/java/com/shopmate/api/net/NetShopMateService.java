@@ -51,11 +51,11 @@ public class NetShopMateService implements ShopMateService {
     private static final String CreateItemUrl = "/item/create";
     private static final String GetItemUrl = "/item/%s";
 
-    private static final String AllInvitesUrl = "/request/all";
-    private static final String SendInviteUrl = "/request/send";
-    private static final String AcceptInviteUrl = "/request/%s/accept";
-    private static final String DeclineInviteUrl = "/request/%s/decline";
-    private static final String CancelInviteUrl = "/request/%s/cancel";
+    private static final String AllInvitesUrl = "/invite/all";
+    private static final String SendInviteUrl = "/invite/send";
+    private static final String AcceptInviteUrl = "/invite/%s/accept";
+    private static final String DeclineInviteUrl = "/invite/%s/decline";
+    private static final String CancelInviteUrl = "/invite/%s/cancel";
 
     private static ListeningExecutorService ThreadPool =
             MoreExecutors.listeningDecorator(
