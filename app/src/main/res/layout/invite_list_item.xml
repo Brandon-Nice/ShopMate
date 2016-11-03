@@ -14,13 +14,13 @@
     <Button
         android:text="Decline"
         android:layout_width="wrap_content"
-        android:layout_height="32dp"
-        android:id="@+id/decline" />
+        android:id="@+id/decline"
+        android:layout_height="50dp" />
 
     <Button
         android:text="Accept"
         android:layout_width="wrap_content"
-        android:layout_height="32dp"
-        android:id="@+id/button3" />
+        android:id="@+id/accept"
+        android:layout_height="50dp" />
 
 </LinearLayout>

@@ -233,6 +233,8 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_personal) {
 
+        } else if (id == R.id.nav_list_invites) {
+            startActivity(new Intent(MainActivity.this, InviteRequestsActivity.class));
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
