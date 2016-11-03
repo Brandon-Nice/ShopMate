@@ -26,6 +26,7 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.shopmate.api.ShopMateServiceProvider;
@@ -138,7 +139,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 String fbToken = AccessToken.getCurrentAccessToken().getToken();
-                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, "New List" + Integer.toString(i++)), new FutureCallback<CreateShoppingListResult>() {
+                ImmutableSet<String> invites = ImmutableSet.of();
+                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, "New List" + Integer.toString(i++), invites), new FutureCallback<CreateShoppingListResult>() {
                     @Override
                     public void onSuccess(CreateShoppingListResult result) {
                         final String tmp = result.getList().getTitle();

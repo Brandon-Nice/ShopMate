@@ -14,6 +14,7 @@ public class ShoppingListJson {
     private String title = "";
     private String creator = "";
     private List<ShoppingListItemHandleJson> items = new ArrayList<>();
+    private List<String> members = new ArrayList<>();
 
     public ShoppingListJson() {
     }
@@ -22,7 +23,7 @@ public class ShoppingListJson {
         return new ShoppingList(
                 creator,
                 title,
-                ImmutableSet.<String>of(creator),
+                ImmutableSet.copyOf(members),
                 buildItemHandles());
     }
 
