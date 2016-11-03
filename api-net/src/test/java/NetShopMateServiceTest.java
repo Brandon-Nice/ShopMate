@@ -1,3 +1,5 @@
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.shopmate.api.ShopMateService;
 import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.item.ShoppingListItemBuilder;
@@ -29,6 +31,7 @@ public class NetShopMateServiceTest {
     private static final String TestId2 = "132318773909242";
 
     private static final String TestListName = "Test List";
+    private static final String TestListInviteName = "Test List with Invite";
 
     private static final String TestItemName = "Test Item";
     private static final String TestItemDescription = "Foo";
@@ -47,7 +50,7 @@ public class NetShopMateServiceTest {
 
     @Test
     public void testCreatingList() throws ExecutionException, InterruptedException {
-        CreateShoppingListResult result = service.createListAsync(TestToken, TestListName).get();
+        CreateShoppingListResult result = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
         Assert.assertEquals(TestListName, result.getList().getTitle());
         Assert.assertEquals(TestId, result.getList().getCreatorId());
         Assert.assertTrue(result.getList().getMemberIds().contains(TestId));
@@ -56,7 +59,7 @@ public class NetShopMateServiceTest {
 
     @Test
     public void testCreatingAndGettingList() throws ExecutionException, InterruptedException {
-        CreateShoppingListResult result = service.createListAsync(TestToken, TestListName).get();
+        CreateShoppingListResult result = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
         ShoppingList expected = result.getList();
         ShoppingList actual = service.getListAndItemsAsync(TestToken, result.getId()).get();
         Assert.assertEquals(expected.getTitle(), actual.getTitle());
@@ -87,7 +90,7 @@ public class NetShopMateServiceTest {
 
     @Test
     public void testCreatingItem() throws ExecutionException, InterruptedException {
-        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName).get();
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
         ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
                 .description(TestItemDescription)
                 .imageUrl(TestItemImage)
@@ -110,7 +113,7 @@ public class NetShopMateServiceTest {
 
     @Test
     public void testCreatingAndGettingItem() throws ExecutionException, InterruptedException {
-        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName).get();
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
 
         ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
                 .description(TestItemDescription)
@@ -154,47 +157,72 @@ public class NetShopMateServiceTest {
         // make sure test user 2 has an ID
         service.getAllListsNoItemsAsync(TestToken2).get();
 
-        CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName).get();
+        CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
         SendInviteResult sentInvite = service.sendInvite(TestToken, createdList.getId(), TestId2).get();
+        long inviteId = sentInvite.getId();
 
         GetAllInvitesResult allInvites1 = service.getAllInvites(TestToken).get();
-        boolean foundOutgoing1 = false, foundIncoming1 = false;
-        for (ShoppingListInvite invite : allInvites1.getOutgoingInvites()) {
-            if (invite.getId() == sentInvite.getId()) {
-                foundOutgoing1 = true;
-                Assert.assertEquals(invite.getListTitle(), TestListName);
-                Assert.assertEquals(invite.getSenderId(), TestId);
-                Assert.assertEquals(invite.getReceiverId(), TestId2);
-                break;
-            }
-        }
-        for (ShoppingListInvite invite : allInvites1.getIncomingInvites()) {
-            if (invite.getId() == sentInvite.getId()) {
-                foundIncoming1 = true;
-                break;
-            }
-        }
-        Assert.assertTrue(foundOutgoing1);
-        Assert.assertFalse(foundIncoming1);
+        int outgoingIndex1 = indexOfInviteById(allInvites1.getOutgoingInvites(), inviteId);
+        int incomingIndex1 = indexOfInviteById(allInvites1.getIncomingInvites(), inviteId);
+        Assert.assertTrue(outgoingIndex1 >= 0);
+        Assert.assertTrue(incomingIndex1 < 0);
+        ShoppingListInvite invite1 = allInvites1.getOutgoingInvites().get(outgoingIndex1);
+        Assert.assertEquals(invite1.getListTitle(), TestListName);
+        Assert.assertEquals(invite1.getSenderId(), TestId);
+        Assert.assertEquals(invite1.getReceiverId(), TestId2);
 
         GetAllInvitesResult allInvites2 = service.getAllInvites(TestToken2).get();
-        boolean foundOutgoing2 = false, foundIncoming2 = false;
-        for (ShoppingListInvite invite : allInvites2.getIncomingInvites()) {
-            if (invite.getId() == sentInvite.getId()) {
-                foundIncoming2 = true;
-                Assert.assertEquals(invite.getListTitle(), TestListName);
-                Assert.assertEquals(invite.getSenderId(), TestId);
-                Assert.assertEquals(invite.getReceiverId(), TestId2);
-                break;
+        int outgoingIndex2 = indexOfInviteById(allInvites2.getOutgoingInvites(), inviteId);
+        int incomingIndex2 = indexOfInviteById(allInvites2.getIncomingInvites(), inviteId);
+        Assert.assertTrue(outgoingIndex2 < 0);
+        Assert.assertTrue(incomingIndex2 >= 0);
+        ShoppingListInvite invite2 = allInvites2.getIncomingInvites().get(incomingIndex2);
+        Assert.assertEquals(invite2.getListTitle(), TestListName);
+        Assert.assertEquals(invite2.getSenderId(), TestId);
+        Assert.assertEquals(invite2.getReceiverId(), TestId2);
+    }
+
+    @Test
+    public void testCreatingListWithInvite() throws ExecutionException, InterruptedException {
+        // make sure test user 2 has an ID
+        service.getAllListsNoItemsAsync(TestToken2).get();
+
+        service.createListAsync(TestToken, TestListInviteName, ImmutableSet.of(TestId2)).get();
+
+        GetAllInvitesResult allInvites1 = service.getAllInvites(TestToken).get();
+        int outgoingIndex1 = indexOfInviteByName(allInvites1.getOutgoingInvites(), TestListInviteName);
+        int incomingIndex1 = indexOfInviteByName(allInvites1.getIncomingInvites(), TestListInviteName);
+        Assert.assertTrue(outgoingIndex1 >= 0);
+        Assert.assertTrue(incomingIndex1 < 0);
+        ShoppingListInvite invite1 = allInvites1.getOutgoingInvites().get(outgoingIndex1);
+        Assert.assertEquals(invite1.getSenderId(), TestId);
+        Assert.assertEquals(invite1.getReceiverId(), TestId2);
+
+        GetAllInvitesResult allInvites2 = service.getAllInvites(TestToken2).get();
+        int outgoingIndex2 = indexOfInviteByName(allInvites2.getOutgoingInvites(), TestListInviteName);
+        int incomingIndex2 = indexOfInviteByName(allInvites2.getIncomingInvites(), TestListInviteName);
+        Assert.assertTrue(outgoingIndex2 < 0);
+        Assert.assertTrue(incomingIndex2 >= 0);
+        ShoppingListInvite invite2 = allInvites2.getIncomingInvites().get(incomingIndex2);
+        Assert.assertEquals(invite2.getSenderId(), TestId);
+        Assert.assertEquals(invite2.getReceiverId(), TestId2);
+    }
+
+    private static int indexOfInviteById(ImmutableList<ShoppingListInvite> invites, long id) {
+        for (int i = 0; i < invites.size(); i++) {
+            if (invites.get(i).getId() == id) {
+                return i;
             }
         }
-        for (ShoppingListInvite invite : allInvites2.getOutgoingInvites()) {
-            if (invite.getId() == sentInvite.getId()) {
-                foundOutgoing2 = true;
-                break;
+        return -1;
+    }
+
+    private static int indexOfInviteByName(ImmutableList<ShoppingListInvite> invites, String name) {
+        for (int i = 0; i < invites.size(); i++) {
+            if (invites.get(i).getListTitle().equals(name)) {
+                return i;
             }
         }
-        Assert.assertTrue(foundIncoming2);
-        Assert.assertFalse(foundOutgoing2);
+        return -1;
     }
 }

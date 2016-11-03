@@ -1,6 +1,6 @@
 package com.shopmate.api.net;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -67,11 +67,11 @@ public class NetShopMateService implements ShopMateService {
     }
 
     @Override
-    public ListenableFuture<CreateShoppingListResult> createListAsync(final String fbToken, final String title) {
+    public ListenableFuture<CreateShoppingListResult> createListAsync(final String fbToken, final String title, final ImmutableSet<String> inviteUserIds) {
         return ThreadPool.submit(new Callable<CreateShoppingListResult>() {
             @Override
             public CreateShoppingListResult call() throws Exception {
-                CreateListRequest request = new CreateListRequest(fbToken, title, ImmutableList.<String>of());
+                CreateListRequest request = new CreateListRequest(fbToken, title, inviteUserIds);
                 Type responseType = new TypeToken<ApiResponse<ShoppingListJson>>(){}.getType();
                 ApiResponse<ShoppingListJson> response = post(CreateListUrl, request, responseType);
                 throwIfRequestFailed(response);

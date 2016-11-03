@@ -1,5 +1,6 @@
 package com.shopmate.api;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.list.ShoppingList;
@@ -20,9 +21,10 @@ public interface ShopMateService {
      *
      * @param fbToken The user's Facebook token.
      * @param title The title of the list to create.
+     * @param inviteUserIds The IDs of additional users to invite.
      * @return The actual shopping list that was created.
      */
-    ListenableFuture<CreateShoppingListResult> createListAsync(String fbToken, String title);
+    ListenableFuture<CreateShoppingListResult> createListAsync(String fbToken, String title, ImmutableSet<String> inviteUserIds);
 
     /**
      * Asynchronously gets information about a single shopping list and the items in it.
