@@ -16,8 +16,11 @@ import com.shopmate.api.model.result.GetAllInvitesResult;
 import com.shopmate.api.model.result.GetAllShoppingListsResult;
 import com.shopmate.api.model.result.SendInviteResult;
 import com.shopmate.api.net.model.list.ShoppingListJson;
+import com.shopmate.api.net.model.request.AcceptInviteRequest;
+import com.shopmate.api.net.model.request.CancelInviteRequest;
 import com.shopmate.api.net.model.request.CreateItemRequest;
 import com.shopmate.api.net.model.request.CreateListRequest;
+import com.shopmate.api.net.model.request.DeclineInviteRequest;
 import com.shopmate.api.net.model.request.GetAllInvitesRequest;
 import com.shopmate.api.net.model.request.GetAllListsRequest;
 import com.shopmate.api.net.model.request.GetListRequest;
@@ -50,6 +53,9 @@ public class NetShopMateService implements ShopMateService {
 
     private static final String AllInvitesUrl = "/request/all";
     private static final String SendInviteUrl = "/request/send";
+    private static final String AcceptInviteUrl = "/request/%s/accept";
+    private static final String DeclineInviteUrl = "/request/%s/decline";
+    private static final String CancelInviteUrl = "/request/%s/cancel";
 
     private static ListeningExecutorService ThreadPool =
             MoreExecutors.listeningDecorator(
@@ -172,6 +178,51 @@ public class NetShopMateService implements ShopMateService {
                 ApiResponse<SendInviteResponse> response = post(SendInviteUrl, request, responseType);
                 throwIfRequestFailed(response);
                 return response.getResult().get().toResult();
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> acceptInvite(final String fbToken, final long inviteId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                AcceptInviteRequest request = new AcceptInviteRequest(fbToken);
+                String url = String.format(AcceptInviteUrl, inviteId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> declineInvite(final String fbToken, final long inviteId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                DeclineInviteRequest request = new DeclineInviteRequest(fbToken);
+                String url = String.format(DeclineInviteUrl, inviteId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> cancelInvite(final String fbToken, final long inviteId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                CancelInviteRequest request = new CancelInviteRequest(fbToken);
+                String url = String.format(CancelInviteUrl, inviteId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
             }
         });
     }
