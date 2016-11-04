@@ -50,6 +50,7 @@ import java.util.concurrent.ExecutionException;
 public class AddItemActivity extends AppCompatActivity {
 
     public static EditText name;
+    static final int WALMART_SEARCH = 2;
     private static final int SELECT_PICTURE = 1;
     private static final int WRITE_PERMISSION = 0x01;
     private static Uri selectedImageUri; //stores the image url for the item
@@ -64,26 +65,7 @@ public class AddItemActivity extends AppCompatActivity {
         toolbar.setTitle("Add Item");
         requestWritePermission(); //used for accessing photos: ask for permission first
 
-        String flag = getIntent().getStringExtra("CAME_FROM");
-        if(flag != null && flag.equals("WalmartSearch")) {
-            String walmartItemName = getIntent().getStringExtra("itemName");
-            int walmartItemPrice = Integer.parseInt(getIntent().getStringExtra("itemPrice"));
-            String walmartItemDesc = getIntent().getStringExtra("itemDesc");
-            String walmartItemURL = getIntent().getStringExtra("itemImage");
 
-            TextView name = (TextView) findViewById(R.id.itemName);
-            name.setText(walmartItemName);
-
-            TextView price = (TextView) findViewById(R.id.itemPrice);
-            double walmartItemDouble = ((double)walmartItemPrice)/100;
-            price.setText(Double.toString(walmartItemDouble));
-
-            TextView desc = (TextView) findViewById(R.id.itemDesc);
-            desc.setText(walmartItemDesc);
-
-            ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
-            Picasso.with(this).load(walmartItemURL).into(image);
-        }
 
         //For populating the Spinner object (Item importance)
         Spinner spinner = (Spinner)findViewById(R.id.itemImp);
@@ -98,7 +80,7 @@ public class AddItemActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent init = new Intent(AddItemActivity.this, WalmartSearch.class);
                 init.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(init);
+                startActivityForResult(init, WALMART_SEARCH);
             }
         });
 
@@ -155,6 +137,24 @@ public class AddItemActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            } else if (requestCode == WALMART_SEARCH) {
+                    String walmartItemName = data.getStringExtra("itemName");
+                    int walmartItemPrice = Integer.parseInt(data.getStringExtra("itemPrice"));
+                    String walmartItemDesc = data.getStringExtra("itemDesc");
+                    String walmartItemURL = data.getStringExtra("itemImage");
+
+                    TextView name = (TextView) findViewById(R.id.itemName);
+                    name.setText(walmartItemName);
+
+                    TextView price = (TextView) findViewById(R.id.itemPrice);
+                    double walmartItemDouble = ((double)walmartItemPrice)/100;
+                    price.setText(Double.toString(walmartItemDouble));
+
+                    TextView desc = (TextView) findViewById(R.id.itemDesc);
+                    desc.setText(walmartItemDesc);
+
+                    ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
+                    Picasso.with(this).load(walmartItemURL).into(image);
             }
         }
     }
@@ -239,12 +239,13 @@ public class AddItemActivity extends AppCompatActivity {
         //Create a shopping list item to be used in the next API call
         ShoppingListItem testItem = new ShoppingListItemBuilder(listName)
                 .description(itemDescription.getText().toString().trim())
-                .imageUrl(selectedImageUri.toString())
-                .maxPriceCents(Integer.parseInt(itemPrice.getText().toString()))
+                .imageUrl(selectedImageUri == null ? "" : selectedImageUri.toString())
+                .maxPriceCents( Math.round(Float.parseFloat(itemPrice.getText().toString()) * 100) )
                 .quantity(Integer.parseInt(itemQuantity.getText().toString()))
                 .quantityPurchased(0) //TODO: Maybe change this val?
                 .priority(convertPriority(selectedImp))
                 .build();
+
 
         // Start an API call in the background
         ListenableFuture<CreateShoppingListItemResult> future = service.createItemAsync(fbToken, listId, testItem);
