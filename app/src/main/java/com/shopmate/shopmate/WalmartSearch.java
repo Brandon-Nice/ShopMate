@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -189,6 +190,7 @@ public class WalmartSearch extends AppCompatActivity {
                 return json;
             }
             catch(JSONException e) {
+                Toast.makeText(WalmartSearch.this, "didn't work", Toast.LENGTH_SHORT);
                 e.printStackTrace();
             }
             finally {

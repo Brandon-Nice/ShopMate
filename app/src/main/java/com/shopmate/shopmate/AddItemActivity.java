@@ -54,7 +54,7 @@ public class AddItemActivity extends AppCompatActivity {
     private static final int SELECT_PICTURE = 1;
     private static final int WRITE_PERMISSION = 0x01;
     private static Uri selectedImageUri; //stores the image url for the item
-    private static String selectedImp; //stores the selected item importance taken from the dropdown menu
+    private Spinner spinner; //stores the selected item importance taken from the dropdown menu
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,11 +68,10 @@ public class AddItemActivity extends AppCompatActivity {
 
 
         //For populating the Spinner object (Item importance)
-        Spinner spinner = (Spinner)findViewById(R.id.itemImp);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.importance_array, android.R.layout.simple_spinner_item);
+        spinner = (Spinner)findViewById(R.id.itemImp);
+        final ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.importance_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        selectedImp = spinner.getSelectedItem().toString(); //get the selected importance from the spinner obj
 
         // For the Walmart Search feature
         ((ImageButton)findViewById(R.id.addWalmart)).setOnClickListener(new View.OnClickListener() {
@@ -91,7 +90,8 @@ public class AddItemActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (name.getText().length() != 0) {
                     Intent res = new Intent();
-                    res.putExtra("item", name.getText().toString());
+                    res.putExtra("item_name", name.getText().toString());
+                    res.putExtra("item_prio", spinner.getSelectedItem().toString());
                     setResult(RESULT_OK, res);
                 }
 
@@ -99,8 +99,10 @@ public class AddItemActivity extends AppCompatActivity {
                 try {
                     syncItem();
                 } catch (ExecutionException e) {
+                    setResult(RESULT_CANCELED);
                     e.printStackTrace();
                 } catch (InterruptedException e) {
+                    setResult(RESULT_CANCELED);
                     e.printStackTrace();
                 }
                 finish();
@@ -237,13 +239,13 @@ public class AddItemActivity extends AppCompatActivity {
 
 
         //Create a shopping list item to be used in the next API call
-        ShoppingListItem testItem = new ShoppingListItemBuilder(listName)
+        ShoppingListItem testItem = new ShoppingListItemBuilder(name.getText().toString())
                 .description(itemDescription.getText().toString().trim())
                 .imageUrl(selectedImageUri == null ? "" : selectedImageUri.toString())
                 .maxPriceCents( Math.round(Float.parseFloat(itemPrice.getText().toString()) * 100) )
                 .quantity(Integer.parseInt(itemQuantity.getText().toString()))
                 .quantityPurchased(0) //TODO: Maybe change this val?
-                .priority(convertPriority(selectedImp))
+                .priority(convertPriority(spinner.getSelectedItem().toString()))
                 .build();
 
 

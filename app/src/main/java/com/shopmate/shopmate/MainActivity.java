@@ -1,10 +1,12 @@
 package com.shopmate.shopmate;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -152,7 +155,6 @@ public class MainActivity extends AppCompatActivity
                 ///Intent j = new Intent(view.getContext(), AddItemActivity.class);
                 //i.putExtra("title", (String)parent.getItemAtPosition(position));
                 //j.putExtra("title", (String)parent.getItemAtPosition(position));
-                Toast.makeText(MainActivity.this, "List id: " + Long.toString(data.getKey()), Toast.LENGTH_LONG).show();
                 //i.putExtra("listId", listId);
                 //j.putExtra("listId", listId);
                 startActivity(i);
@@ -186,27 +188,50 @@ public class MainActivity extends AppCompatActivity
         ((Button)findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String fbToken = AccessToken.getCurrentAccessToken().getToken();
-                ImmutableSet<String> invites = ImmutableSet.of();
-                String listTitle = "New List" + Integer.toString(i++);
-                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, listTitle, invites), new FutureCallback<CreateShoppingListResult>() {
-                    @Override
-                    public void onSuccess(CreateShoppingListResult result) {
-                        final Map.Entry<Long, ShoppingList> tmp = new AbstractMap.SimpleImmutableEntry<Long, ShoppingList>(result.getId(), result.getList());
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                a.insert(tmp, 0);
-                            }
-                        });
-                        Snackbar.make(listview, "success", Snackbar.LENGTH_LONG).show();
-                    }
+                final String fbToken = AccessToken.getCurrentAccessToken().getToken();
+                final ImmutableSet<String> invites = ImmutableSet.of();
 
-                    @Override
-                    public void onFailure(Throwable t) {
-                        Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
-                    }
-                });
+
+                final EditText txtUrl = new EditText(MainActivity.this);
+
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("New List Title")
+                        .setView(txtUrl)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String listTitle = txtUrl.getText().toString();
+                                if (listTitle.length() == 0) {
+                                    return;
+                                }
+                                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, listTitle, invites), new FutureCallback<CreateShoppingListResult>() {
+                                    @Override
+                                    public void onSuccess(CreateShoppingListResult result) {
+                                        final Map.Entry<Long, ShoppingList> tmp = new AbstractMap.SimpleImmutableEntry<Long, ShoppingList>(result.getId(), result.getList());
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                a.insert(tmp, 0);
+                                            }
+                                        });
+                                        Snackbar.make(listview, "success", Snackbar.LENGTH_LONG).show();
+                                    }
+
+                                    @Override
+                                    public void onFailure(Throwable t) {
+                                        Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                return;
+                            }
+                        })
+                        .show();
+
+
             }
         });
     }
