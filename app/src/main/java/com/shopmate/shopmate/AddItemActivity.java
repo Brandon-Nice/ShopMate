@@ -3,17 +3,12 @@ package com.shopmate.shopmate;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
-import android.provider.MediaStore;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -26,6 +21,7 @@ import android.widget.ImageButton;
 import android.provider.MediaStore.Images.Media;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -45,6 +41,8 @@ import com.shopmate.api.model.result.GetAllShoppingListsResult;
 
 import java.io.File;
 import java.io.FileDescriptor;
+import com.squareup.picasso.Picasso;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
@@ -65,6 +63,27 @@ public class AddItemActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle("Add Item");
         requestWritePermission(); //used for accessing photos: ask for permission first
+
+        String flag = getIntent().getStringExtra("CAME_FROM");
+        if(flag != null && flag.equals("WalmartSearch")) {
+            String walmartItemName = getIntent().getStringExtra("itemName");
+            int walmartItemPrice = Integer.parseInt(getIntent().getStringExtra("itemPrice"));
+            String walmartItemDesc = getIntent().getStringExtra("itemDesc");
+            String walmartItemURL = getIntent().getStringExtra("itemImage");
+
+            TextView name = (TextView) findViewById(R.id.itemName);
+            name.setText(walmartItemName);
+
+            TextView price = (TextView) findViewById(R.id.itemPrice);
+            double walmartItemDouble = ((double)walmartItemPrice)/100;
+            price.setText(Double.toString(walmartItemDouble));
+
+            TextView desc = (TextView) findViewById(R.id.itemDesc);
+            desc.setText(walmartItemDesc);
+
+            ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
+            Picasso.with(this).load(walmartItemURL).into(image);
+        }
 
         //For populating the Spinner object (Item importance)
         Spinner spinner = (Spinner)findViewById(R.id.itemImp);

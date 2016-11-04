@@ -10,6 +10,11 @@
             android:id="@+id/nav_personal"
             android:icon="@drawable/ic_personal_lists_black_24dp"
             android:title="Personal Lists" />
+        <!-- TODO Change the icon for this option -->
+        <item
+            android:id="@+id/nav_list_invites"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="List Invites" />
     </group>
 
     <item android:title="Communicate">
