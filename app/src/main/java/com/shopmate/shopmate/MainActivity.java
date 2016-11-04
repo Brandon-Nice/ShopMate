@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity
     static LoginButton loginButton;
     static CallbackManager callbackManager;
     static int i = 1;
+    static String listTitle = "";
+    static int listId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +109,16 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(view.getContext(), ShoppingListActivity.class);
-                i.putExtra("title", (String)parent.getItemAtPosition(position));
+                Bundle extras = new Bundle();
+                extras.putString("title", (String)parent.getItemAtPosition(position));
+                extras.putString("listId", String.valueOf(listId));
+                i.putExtras(extras);
+                ///Intent j = new Intent(view.getContext(), AddItemActivity.class);
+                //i.putExtra("title", (String)parent.getItemAtPosition(position));
+                //j.putExtra("title", (String)parent.getItemAtPosition(position));
+                Toast.makeText(MainActivity.this, "List id: " + listId, Toast.LENGTH_LONG).show();
+                //i.putExtra("listId", listId);
+                //j.putExtra("listId", listId);
                 startActivity(i);
             }
         });
@@ -140,7 +152,9 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 String fbToken = AccessToken.getCurrentAccessToken().getToken();
                 ImmutableSet<String> invites = ImmutableSet.of();
-                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, "New List" + Integer.toString(i++), invites), new FutureCallback<CreateShoppingListResult>() {
+                listTitle = "New List" + Integer.toString(i++);
+                listId = i-1;
+                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, listTitle, invites), new FutureCallback<CreateShoppingListResult>() {
                     @Override
                     public void onSuccess(CreateShoppingListResult result) {
                         final String tmp = result.getList().getTitle();

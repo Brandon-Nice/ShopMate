@@ -27,7 +27,10 @@ public class ShoppingListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(getIntent().getStringExtra("title"));
+        Bundle extras = getIntent().getExtras();
+        final String title = extras.getString("title");
+        final String listId = extras.getString("listId");
+        toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
 
@@ -54,7 +57,12 @@ public class ShoppingListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // TODO Either bring user to new item activity or allow user to enter item info here
-                startActivityForResult(new Intent(view.getContext(), AddItemActivity.class), ADD_ITEM_REQUEST);
+                Intent i = new Intent(view.getContext(), AddItemActivity.class);
+                Bundle extras = new Bundle();
+                extras.putString("title", title);
+                extras.putString("listId", listId);
+                i.putExtras(extras);
+                startActivityForResult(i, ADD_ITEM_REQUEST);
             }
         });
     }
@@ -76,7 +84,6 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
     private class ShoppingListItemAdapter extends ArrayAdapter<String> {
-        // TODO create an item class that contains things like price, quantity, brand, etc.
         private List<String> items;
         private Context context;
 
