@@ -31,3 +31,5 @@ dependencies {
     androidTestCompile 'junit:junit:4.12'
     compile project(':api-net')
 }
+
+apply plugin: 'com.google.gms.google-services'
