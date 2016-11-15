@@ -67,7 +67,7 @@ public class AddItemActivity extends AppCompatActivity {
 
 
 
-        //For populating the Spinner object (Item importance)
+        //For populating the Spinner object (item importance)
         spinner = (Spinner)findViewById(R.id.itemImp);
         final ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.importance_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

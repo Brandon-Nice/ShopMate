@@ -34,6 +34,7 @@ import java.util.List;
 
 import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.item.ShoppingListItemBuilder;
+import com.squareup.picasso.Picasso;
 
 public class WalmartSearch extends AppCompatActivity {
 
@@ -174,9 +175,6 @@ public class WalmartSearch extends AppCompatActivity {
                         }
                         String image = JSONitem.getString("thumbnailImage");
 
-                        //Item tempItem = new Item(name, price, descr, image);
-                        //walmartResult.add(tempItem);
-
                         System.out.println(name + ": " + price);
 
                         Item = new ShoppingListItemBuilder(name)
@@ -226,7 +224,8 @@ public class WalmartSearch extends AppCompatActivity {
             }
 
             String itemName = items.get(position).getName();
-            int itemPrice = items.get(position).getMaxPriceCents().get();
+            double itemPrice = ((double)items.get(position).getMaxPriceCents().get() / 100);
+            String itemPriceName = Double.toString(itemPrice);
             String itemPicture = items.get(position).getImageUrl().get();
 
 
@@ -234,11 +233,13 @@ public class WalmartSearch extends AppCompatActivity {
             textViewName.setTextColor(Color.BLACK);
             textViewName.setText(itemName);
 
-            TextView textViewPrice = (TextView) view.findViewById(R.id.itemPrice);
-            //textViewPrice.setText(itemPrice);
+            TextView textViewPrice = (TextView) view.findViewById(R.id.itemPriceList);
+            textViewPrice.setTextColor(Color.BLACK);
+            textViewPrice.setText("$" + itemPriceName);
 
             ImageView imageView = (ImageView) view.findViewById(R.id.itemImage);
             //TODO: use Picasso to add image
+            Picasso.with(getApplicationContext()).load(itemPicture).into(imageView);
 
             return view;
         }
