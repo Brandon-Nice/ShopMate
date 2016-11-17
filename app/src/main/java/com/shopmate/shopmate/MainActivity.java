@@ -29,10 +29,14 @@ import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.widget.LoginButton;
+import com.facebook.share.model.AppInviteContent;
+import com.facebook.share.widget.AppInviteDialog;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
@@ -90,6 +94,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -310,6 +317,18 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_list_invites) {
             startActivity(new Intent(MainActivity.this, InviteRequestsActivity.class));
         } else if (id == R.id.nav_share) {
+            String appLinkUrl, previewImageUrl;
+
+            appLinkUrl = "https://fb.me/1210406722382112";
+            previewImageUrl = "http://www.beliefnet.com/columnists/bemore/files/2013/11/bigstock-Hacker-Typing-On-A-Laptop-44548564.jpg";
+
+            if(AppInviteDialog.canShow()) {
+                AppInviteContent content = new AppInviteContent.Builder()
+                        .setApplinkUrl(appLinkUrl)
+                        .setPreviewImageUrl(previewImageUrl)
+                        .build();
+                AppInviteDialog.show(this,content);
+            }
 
         } else if (id == R.id.nav_send) {
 
