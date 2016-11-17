@@ -12,7 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,8 +101,14 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             String itemName = items.get(position);
 
-            CheckBox checkBox = (CheckBox) view.findViewById(R.id.checkBox);
+            CheckBox checkBox = (CheckBox) view.findViewById(R.id.itemCheckBox);
             checkBox.setText(itemName);
+
+            ImageView imageView = (ImageView) view.findViewById(R.id.itemImageView);
+            Picasso.with(getContext())
+                    .load("http://doseoffunny.com/wp-content/uploads/2014/04/tumblr_mtanx0poHz1qdlh1io1_400.gif")
+                    .resize(150,150)
+                    .into(imageView);
 
             return view;
         }
