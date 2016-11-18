@@ -33,7 +33,6 @@ public class ShoppingListActivity extends AppCompatActivity {
         toolbar.setTitle(getIntent().getStringExtra("title"));
         setSupportActionBar(toolbar);
 
-
         // These are just some mock items to add to the list.
         // TODO retrieve these items from the database
         final List<String> items = new ArrayList<>();

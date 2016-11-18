@@ -1,31 +1,48 @@
 package com.shopmate.shopmate;
 
-import android.app.ProgressDialog;
+
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.shopmate.api.model.item.ShoppingListItem;
+import com.shopmate.api.model.item.ShoppingListItemBuilder;
 
 public class WalmartSearch extends AppCompatActivity {
 
     public static EditText walmartEditText;
     public String url;
+    private ListView walmartList;
+    private ArrayList<ShoppingListItem> walmartResult;
+    private ShoppingListItem Item;
+    static ShoppingListItemAdapter sla;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,10 +58,29 @@ public class WalmartSearch extends AppCompatActivity {
                     new JSONParse().execute();
                 }
                 else {
-                    //Toast message saying to enter a field in the textbox
+                    //TODO: Toast message saying to enter a field in the textbox
                 }
             }
 
+        });
+        walmartList = (ListView) findViewById(R.id.walmartListView);
+        walmartList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ShoppingListItem resultItem = (ShoppingListItem) walmartList.getItemAtPosition(position);
+                Bundle b = new Bundle();
+                b.putString("itemName",resultItem.getName());
+                b.putString("itemPrice", resultItem.getMaxPriceCents().get().toString());
+                b.putString("itemDesc", resultItem.getDescription());
+                b.putString("itemImage", resultItem.getImageUrl().get());
+
+                Intent i = new Intent(WalmartSearch.this, AddItemActivity.class);
+                i.putExtra("CAME_FROM", "WalmartSearch");
+                i.putExtras(b);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(i);
+
+            }
         });
     }
 
@@ -122,15 +158,29 @@ public class WalmartSearch extends AppCompatActivity {
                 JSONObject json = getJSONObjectFromURL(url);
                     JSONArray jsonArray = json.getJSONArray("items");
                     System.out.println(jsonArray.toString());
+
+                    walmartResult = new ArrayList<ShoppingListItem>();
+
                     for(int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject item = jsonArray.getJSONObject(i);
-                        String name = item.getString("name");
-                        Double price = item.getDouble("salePrice");
+                        JSONObject JSONitem = jsonArray.getJSONObject(i);
+                        String name = JSONitem.getString("name");
+                        Double price = JSONitem.getDouble("salePrice");
+                        int priceCents = (int)(price*100);
+                        String descr = JSONitem.getString("shortDescription");
+                        String image = JSONitem.getString("thumbnailImage");
+
+                        //Item tempItem = new Item(name, price, descr, image);
+                        //walmartResult.add(tempItem);
+
                         System.out.println(name + ": " + price);
 
-                        //TODO: Create an item for each entry (add it to an item array) and then send it to a
-                        //TODO:  results activity. When a user clicks on that item, it will give them more information.
-                        //TODO:  then the user has the option of adding it to their cart. If they do, it will be added.
+                        Item = new ShoppingListItemBuilder(name)
+                                .description(descr)
+                                .imageUrl(image)
+                                .maxPriceCents(priceCents)
+                                .build();
+
+                        walmartResult.add(Item);
                     }
                 return json;
             }
@@ -140,6 +190,51 @@ public class WalmartSearch extends AppCompatActivity {
             finally {
                 return null;
             }
+        }
+
+        protected void onPostExecute(JSONObject result) {
+            //TODO: Place arraylist in listView
+            ShoppingListItemAdapter shoppingListItemAdapter = new ShoppingListItemAdapter(getApplicationContext(), R.layout.shopping_list_item, walmartResult);
+            walmartList.setAdapter(shoppingListItemAdapter);
+        }
+    }
+    private class ShoppingListItemAdapter extends ArrayAdapter<ShoppingListItem> {
+        // TODO create an item class that contains things like price, quantity, brand, etc.
+        private List<ShoppingListItem> items;
+        private Context context;
+
+        ShoppingListItemAdapter(Context context, int resourceId, List<ShoppingListItem> items) {
+            super(context, resourceId, items);
+            this.items = items;
+            this.context = context;
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+            View view;
+            if (convertView == null) {
+                view = View.inflate(context, R.layout.walmart_list_item, null);
+            } else {
+                view = convertView;
+            }
+
+            String itemName = items.get(position).getName();
+            int itemPrice = items.get(position).getMaxPriceCents().get();
+            String itemPicture = items.get(position).getImageUrl().get();
+
+
+            TextView textViewName = (TextView) view.findViewById(R.id.itemName);
+            textViewName.setTextColor(Color.BLACK);
+            textViewName.setText(itemName);
+
+            TextView textViewPrice = (TextView) view.findViewById(R.id.itemPrice);
+            //textViewPrice.setText(itemPrice);
+
+            ImageView imageView = (ImageView) view.findViewById(R.id.itemImage);
+            //TODO: use Picasso to add image
+
+            return view;
         }
     }
 }

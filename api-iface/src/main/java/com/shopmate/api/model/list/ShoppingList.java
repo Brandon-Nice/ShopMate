@@ -1,38 +1,40 @@
 package com.shopmate.api.model.list;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.shopmate.api.model.item.ShoppingListItemHandle;
 
 public class ShoppingList {
 
     private final String creatorId;
     private final String title;
     private final ImmutableSet<String> memberIds;
-    private final ImmutableSet<Long> itemIds;
+    private final ImmutableList<ShoppingListItemHandle> items;
 
     public ShoppingList(
             String creatorId,
             String title,
             ImmutableSet<String> memberIds,
-            ImmutableSet<Long> itemIds) {
+            ImmutableList<ShoppingListItemHandle> items) {
         this.creatorId = creatorId;
         this.title = title;
         this.memberIds = memberIds;
-        this.itemIds = itemIds;
+        this.items = items;
     }
 
     public String getCreatorId() {
-        return this.creatorId;
+        return creatorId;
     }
 
     public String getTitle() {
-        return this.title;
+        return title;
     }
 
     public ImmutableSet<String> getMemberIds() {
         return memberIds;
     }
 
-    public ImmutableSet<Long> getItemIds() {
-        return itemIds;
+    public ImmutableList<ShoppingListItemHandle> getItems() {
+        return items;
     }
 }

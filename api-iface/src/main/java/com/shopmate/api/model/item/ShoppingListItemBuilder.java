@@ -37,8 +37,18 @@ public class ShoppingListItemBuilder {
         return this;
     }
 
+    public ShoppingListItemBuilder imageUrl(String url) {
+        itemImageUrl = Optional.of(url);
+        return this;
+    }
+
     public ShoppingListItemBuilder maxPriceCents(Optional<Integer> maxPriceCents) {
         itemMaxPriceCents = maxPriceCents;
+        return this;
+    }
+
+    public ShoppingListItemBuilder maxPriceCents(int maxPriceCents) {
+        itemMaxPriceCents = Optional.of(maxPriceCents);
         return this;
     }
 
