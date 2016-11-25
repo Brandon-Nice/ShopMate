@@ -53,7 +53,7 @@ public class AddItemActivity extends AppCompatActivity {
     static final int WALMART_SEARCH = 2;
     private static final int SELECT_PICTURE = 1;
     private static final int WRITE_PERMISSION = 0x01;
-    private static Uri selectedImageUri; //stores the image url for the item
+    private static Uri selectedImageUri = Uri.parse(""); //stores the image url for the item
     private Spinner spinner; //stores the selected item importance taken from the dropdown menu
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +92,7 @@ public class AddItemActivity extends AppCompatActivity {
                     Intent res = new Intent();
                     res.putExtra("item_name", name.getText().toString());
                     res.putExtra("item_prio", spinner.getSelectedItem().toString());
+                    res.putExtra("item_img", selectedImageUri.toString());
                     setResult(RESULT_OK, res);
                 }
 
@@ -123,7 +124,6 @@ public class AddItemActivity extends AppCompatActivity {
             }
         });
     }
-
     //Gets called once an image is selected. Taken from http://viralpatel.net/blogs/pick-image-from-galary-android-app/
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -157,6 +157,8 @@ public class AddItemActivity extends AppCompatActivity {
 
                     ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
                     Picasso.with(this).load(walmartItemURL).into(image);
+                    selectedImageUri = Uri.parse(walmartItemURL);
+                    System.out.println("Image URL: " + selectedImageUri.toString());
             }
         }
     }
