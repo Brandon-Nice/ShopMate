@@ -25,7 +25,6 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -160,6 +159,9 @@ public class MainActivity extends AppCompatActivity
                 });
             }
         });
+
+        // Always register the FCM token with the server
+        InstanceIdService.registerFcmToken();
     }
 
 //    @Override
@@ -245,5 +247,4 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
 }
