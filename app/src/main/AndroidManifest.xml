@@ -48,6 +48,10 @@
             android:name=".InviteRequestsActivity"
             android:label="@string/title_activity_invite_requests"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".RequestHistoryActivity"
+            android:label="RequestHistoryActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
