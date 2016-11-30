@@ -235,11 +235,15 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_list_invites) {
             startActivity(new Intent(MainActivity.this, InviteRequestsActivity.class));
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_list_req_history) {
+            startActivity(new Intent(MainActivity.this, RequestHistoryActivity.class));
         }
+
+//        } else if (id == R.id.nav_share) {
+//
+//        } else if (id == R.id.nav_send) {
+//
+//        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

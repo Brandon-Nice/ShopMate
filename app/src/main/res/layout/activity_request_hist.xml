@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:text="My Items Bought"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:fontFamily="sans-serif"
+        android:textSize="24sp"
+        android:textAlignment="center" />
+
+    <fragment class="com.shopmate.shopmate.ItemsBoughtFragment"
+        android:id="@+id/items_bought_fragment"
+        android:layout_width="match_parent"
+        tools:layout="@layout/fragment_itemsbought_list"
+        android:layout_height="450dp" />
+
+    <RadioGroup android:id="@+id/radioGroup1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
+        <RadioButton android:layout_height="wrap_content"
+            android:id="@+id/radio0" android:layout_width="wrap_content"
+            android:text="" android:checked="true"></RadioButton>
+        <RadioButton android:layout_height="wrap_content"
+            android:id="@+id/radio1" android:layout_width="wrap_content"
+            android:text=""></RadioButton>
+        <RadioButton android:layout_height="wrap_content"
+            android:id="@+id/radio2" android:layout_width="wrap_content"
+            android:text=""></RadioButton>
+    </RadioGroup>
+
+    <ViewFlipper android:id="@+id/ViewFlipper01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <!--adding views to ViewFlipper-->
+        <TextView android:id="@+id/TextView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="First view is now displayed"></TextView>
+        <TextView android:id="@+id/TextView02"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Second view is now displayed"></TextView>
+        <TextView android:id="@+id/TextView03"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Third view is now displayed"></TextView>
+    </ViewFlipper>
+</LinearLayout>
