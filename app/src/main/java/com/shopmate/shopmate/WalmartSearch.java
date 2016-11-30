@@ -74,11 +74,10 @@ public class WalmartSearch extends AppCompatActivity {
                 b.putString("itemDesc", resultItem.getDescription());
                 b.putString("itemImage", resultItem.getImageUrl().get());
 
-                Intent i = new Intent(WalmartSearch.this, AddItemActivity.class);
-                i.putExtra("CAME_FROM", "WalmartSearch");
+                Intent i = new Intent();
                 i.putExtras(b);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
+                setResult(RESULT_OK, i);
+                finish();
 
             }
         });
@@ -166,7 +165,12 @@ public class WalmartSearch extends AppCompatActivity {
                         String name = JSONitem.getString("name");
                         Double price = JSONitem.getDouble("salePrice");
                         int priceCents = (int)(price*100);
-                        String descr = JSONitem.getString("shortDescription");
+                        String descr;
+                        if (JSONitem.has("shortDescription")) {
+                            descr = JSONitem.getString("shortDescription");
+                        } else { // I haven't been able to get shortDescription to work consistently and Walmart says that longDescription will always work
+                            descr = JSONitem.getString("longDescription");
+                        }
                         String image = JSONitem.getString("thumbnailImage");
 
                         //Item tempItem = new Item(name, price, descr, image);

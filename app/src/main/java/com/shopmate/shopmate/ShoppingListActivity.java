@@ -12,7 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +30,10 @@ public class ShoppingListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(getIntent().getStringExtra("title"));
+        Bundle extras = getIntent().getExtras();
+        final String title = extras.getString("title");
+        final String listId = extras.getString("listId");
+        toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
         // These are just some mock items to add to the list.
@@ -53,7 +59,12 @@ public class ShoppingListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // TODO Either bring user to new item activity or allow user to enter item info here
-                startActivityForResult(new Intent(view.getContext(), AddItemActivity.class), ADD_ITEM_REQUEST);
+                Intent i = new Intent(view.getContext(), AddItemActivity.class);
+                Bundle extras = new Bundle();
+                extras.putString("title", title);
+                extras.putString("listId", listId);
+                i.putExtras(extras);
+                startActivityForResult(i, ADD_ITEM_REQUEST);
             }
         });
     }
@@ -75,7 +86,6 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
     private class ShoppingListItemAdapter extends ArrayAdapter<String> {
-        // TODO create an item class that contains things like price, quantity, brand, etc.
         private List<String> items;
         private Context context;
 
@@ -97,8 +107,14 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             String itemName = items.get(position);
 
-            CheckBox checkBox = (CheckBox) view.findViewById(R.id.checkBox);
+            CheckBox checkBox = (CheckBox) view.findViewById(R.id.itemCheckBox);
             checkBox.setText(itemName);
+
+            ImageView imageView = (ImageView) view.findViewById(R.id.itemImageView);
+            Picasso.with(getContext())
+                    .load("http://doseoffunny.com/wp-content/uploads/2014/04/tumblr_mtanx0poHz1qdlh1io1_400.gif")
+                    .resize(150,150)
+                    .into(imageView);
 
             return view;
         }

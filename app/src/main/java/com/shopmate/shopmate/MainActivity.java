@@ -1,7 +1,9 @@
 package com.shopmate.shopmate;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
@@ -13,12 +15,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -38,7 +43,10 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -48,6 +56,34 @@ public class MainActivity extends AppCompatActivity
     static int i = 1;
 
     private UpdateListener updateListener;
+
+    private class ShoppingListAdapter extends ArrayAdapter<Map.Entry<Long, ShoppingList>> {
+        private List<Map.Entry<Long, ShoppingList>> items;
+        private Context context;
+        private int layout;
+
+        ShoppingListAdapter(Context context, int resourceId, List<Map.Entry<Long, ShoppingList>> items) {
+            super(context, resourceId, items);
+            this.items = items;
+            this.context = context;
+            this.layout = resourceId;
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+            View view;
+            if (convertView == null) {
+                view = View.inflate(context, layout, null);
+            } else {
+                view = convertView;
+            }
+            TextView title = (TextView) view.findViewById(R.id.label);
+            title.setText(items.get(position).getValue().getTitle());
+
+            return view;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,13 +138,24 @@ public class MainActivity extends AppCompatActivity
         //using arraylists to store data just for the sake of having data
         //TODO: Create a custom Adapter class to take in HashMaps instead to make this more efficient
 
-        final ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, new ArrayList<String>());
+        //final ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, new ArrayList<String>());
+        final ShoppingListAdapter a = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<Map.Entry<Long, ShoppingList>>());
         listview.setAdapter(a);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(view.getContext(), ShoppingListActivity.class);
-                i.putExtra("title", (String)parent.getItemAtPosition(position));
+                Bundle extras = new Bundle();
+                Map.Entry<Long, ShoppingList> data = (Map.Entry<Long, ShoppingList>) parent.getItemAtPosition(position);
+                extras.putString("title", data.getValue().getTitle());
+                extras.putString("listId", Long.toString(data.getKey()));
+                i.putExtras(extras);
+                ///Intent j = new Intent(view.getContext(), AddItemActivity.class);
+                //i.putExtra("title", (String)parent.getItemAtPosition(position));
+                //j.putExtra("title", (String)parent.getItemAtPosition(position));
+                Toast.makeText(MainActivity.this, "List id: " + Long.toString(data.getKey()), Toast.LENGTH_LONG).show();
+                //i.putExtra("listId", listId);
+                //j.putExtra("listId", listId);
                 startActivity(i);
             }
         });
@@ -118,9 +165,9 @@ public class MainActivity extends AppCompatActivity
         Futures.addCallback(ShopMateServiceProvider.get().getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
             @Override
             public void onSuccess(GetAllShoppingListsResult result) {
-                final ArrayList<String> tmp = new ArrayList<String>();
-                for (ShoppingList i : result.getLists().values()) {
-                    tmp.add(i.getTitle());
+                final ArrayList<Map.Entry<Long, ShoppingList>> tmp = new ArrayList<Map.Entry<Long, ShoppingList>>();
+                for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
+                    tmp.add(i);
                 }
 
                 runOnUiThread(new Runnable() {
@@ -142,10 +189,11 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 String fbToken = AccessToken.getCurrentAccessToken().getToken();
                 ImmutableSet<String> invites = ImmutableSet.of();
-                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, "New List" + Integer.toString(i++), invites), new FutureCallback<CreateShoppingListResult>() {
+                String listTitle = "New List" + Integer.toString(i++);
+                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, listTitle, invites), new FutureCallback<CreateShoppingListResult>() {
                     @Override
                     public void onSuccess(CreateShoppingListResult result) {
-                        final String tmp = result.getList().getTitle();
+                        final Map.Entry<Long, ShoppingList> tmp = new AbstractMap.SimpleImmutableEntry<Long, ShoppingList>(result.getId(), result.getList());
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -254,11 +302,15 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_list_invites) {
             startActivity(new Intent(MainActivity.this, InviteRequestsActivity.class));
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_list_req_history) {
+            startActivity(new Intent(MainActivity.this, RequestHistoryActivity.class));
         }
+
+//        } else if (id == R.id.nav_share) {
+//
+//        } else if (id == R.id.nav_send) {
+//
+//        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
