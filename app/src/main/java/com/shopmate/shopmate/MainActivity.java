@@ -98,6 +98,9 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
+        final View navHeader = navView.getHeaderView(0);
+
         if (isLoggedIn()) {
             loginButton = LoginActivity.getLoginButton();
             callbackManager = LoginActivity.getCallbackManager();
@@ -110,8 +113,8 @@ public class MainActivity extends AppCompatActivity
                     final JSONObject jsonObject = response.getJSONObject();
                     String name = "";
                     try {
-                        TextView user_name = (TextView) findViewById(R.id.usertextView);
-                        ImageView user_picture = (ImageView) findViewById(R.id.userimageView);
+                        TextView user_name = (TextView) navHeader.findViewById(R.id.usertextView);
+                        ImageView user_picture = (ImageView) navHeader.findViewById(R.id.userimageView);
 
                         name = jsonObject.getString("name");
                         String firstName = name.substring(0, name.indexOf(" "));
