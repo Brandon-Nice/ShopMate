@@ -8,8 +8,10 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -40,6 +42,7 @@ import com.squareup.picasso.Picasso;
 public class WalmartSearch extends AppCompatActivity {
 
     public static EditText walmartEditText;
+    String searchTerms = "";
     public String url;
     private ListView walmartList;
     private ArrayList<ShoppingListItem> walmartResult;
@@ -51,12 +54,11 @@ public class WalmartSearch extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_walmart_search);
 
-
         ((Button)findViewById(R.id.walmartSearchButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 walmartEditText = (EditText) findViewById(R.id.walmartEditText);
-                String searchTerms = walmartEditText.getText().toString();
+                searchTerms = walmartEditText.getText().toString();
                 if (searchTerms != null && !searchTerms.equals(" ") && !searchTerms.equals("")) {
                     new JSONParse().execute();
                 }
@@ -89,8 +91,42 @@ public class WalmartSearch extends AppCompatActivity {
 
             }
         });
-    }
 
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        walmartEditText = (EditText) findViewById(R.id.walmartEditText);
+        walmartEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    searchTerms = v.getText().toString();
+                    new JSONParse().execute();
+
+                    View view = getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                }
+                return true;
+            }
+        });
+        walmartEditText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if(keyCode == 62 || event.getAction() == KeyEvent.KEYCODE_SPACE) {
+                    System.out.println("SPACE IS PRESSED");
+                    searchTerms = walmartEditText.getText().toString();
+                    if (searchTerms != null && !searchTerms.equals(" ") && !searchTerms.equals("")) {
+                        new JSONParse().execute();
+                    }
+                }
+                return true;
+            }
+        });
+    }
 
     public static JSONObject getJSONObjectFromURL(String urlString) throws IOException, JSONException {
 

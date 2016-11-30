@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.facebook.AccessToken;
@@ -25,7 +26,9 @@ import com.shopmate.api.model.item.ShoppingListItemBuilder;
 import com.shopmate.api.model.item.ShoppingListItemHandle;
 import com.shopmate.api.model.item.ShoppingListItemPriority;
 import com.shopmate.api.model.list.ShoppingList;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -95,6 +98,7 @@ public class ShoppingListActivity extends AppCompatActivity {
                 startActivityForResult(i, ADD_ITEM_REQUEST);
             }
         });
+
     }
 
     //Converts a string priority to the ShoppingListItemPriority enum
@@ -119,6 +123,7 @@ public class ShoppingListActivity extends AppCompatActivity {
                 final Intent d = data;
                 final ShoppingListItemBuilder bld = new ShoppingListItemBuilder(null)
                         .name(d.getStringExtra("item_name"))
+                        .imageUrl(d.getStringExtra("item_img"))
                         .priority(convertPriority(d.getStringExtra("item_prio")));
 
                 runOnUiThread(new Runnable() {
@@ -197,9 +202,37 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             String itemName = items.get(position).getName();
 
-            CheckBox checkBox = (CheckBox) view.findViewById(R.id.checkBox);
+            CheckBox checkBox = (CheckBox) view.findViewById(R.id.itemCheckBox);
             checkBox.setText(itemName);
+            checkBox.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    //TODO: Allow user to edit item
+                    //Go to the AddItemActivity with the intent of editing the item
+                    return true;
+                }
+            });
 
+            ImageView imageView = (ImageView) view.findViewById(R.id.itemImageView);
+            String imageURL = "http://1030news.com/wp-content/themes/fearless/images/missing-image-640x360.png";
+                    if(items.get(position).getImageUrl().isPresent() && items.get(position).getImageUrl().get() != "") {
+                        imageURL = items.get(position).getImageUrl().get();
+                    }
+            if(imageURL.contains("http")) {
+                //web location
+                Picasso.with(getContext())
+                        .load(imageURL)
+                        .resize(150, 150)
+                        .into(imageView);
+            }
+            else {
+                //phone location
+                System.out.println("ImageURL: " + imageURL);
+                Picasso.with(getContext())
+                        .load(new File(imageURL))
+                        .resize(150, 150)
+                        .into(imageView);
+            }
             return view;
         }
     }
