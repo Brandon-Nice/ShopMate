@@ -3,6 +3,7 @@ package com.shopmate.shopmate;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -45,6 +46,8 @@ public class MainActivity extends AppCompatActivity
     static LoginButton loginButton;
     static CallbackManager callbackManager;
     static int i = 1;
+
+    private UpdateListener updateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,9 +165,23 @@ public class MainActivity extends AppCompatActivity
 
         // Always register the FCM token with the server
         InstanceIdService.registerFcmToken();
+
+        updateListener = new UpdateListener(this, new UpdateHandler() {
+            @Override
+            public void onListShared(long listId) {
+                Log.d("MainActivity", "List shared: " + listId);
+                // TODO: Add the list to the UI if it isn't already present
+            }
+        });
+        updateListener.register();
     }
 
-//    @Override
+    @Override
+    protected void onDestroy() {
+        updateListener.unregister();
+    }
+
+    //    @Override
 //    public View getView(int position, View convertView, ViewGroup parent) {
 //        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 //        View rowView = inflater.inflate(R.layout.rowlayout, parent, false);
