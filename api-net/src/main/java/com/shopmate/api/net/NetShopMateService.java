@@ -25,6 +25,7 @@ import com.shopmate.api.net.model.request.GetAllInvitesRequest;
 import com.shopmate.api.net.model.request.GetAllListsRequest;
 import com.shopmate.api.net.model.request.GetListRequest;
 import com.shopmate.api.net.model.request.RegisterFcmTokenRequest;
+import com.shopmate.api.net.model.request.LeaveListRequest;
 import com.shopmate.api.net.model.request.SendInviteRequest;
 import com.shopmate.api.net.model.response.ApiResponse;
 import com.shopmate.api.net.model.response.CreateItemResponse;
@@ -48,6 +49,7 @@ public class NetShopMateService implements ShopMateService {
     private static final String CreateListUrl = "/list/create";
     private static final String AllListsUrl = "/list/all";
     private static final String GetListUrl = "/list/%s";
+    private static final String LeaveListUrl = "/list/%s/leave";
 
     private static final String CreateItemUrl = "/item/create";
     private static final String GetItemUrl = "/item/%s";
@@ -68,8 +70,12 @@ public class NetShopMateService implements ShopMateService {
     private final JsonEndpoint endpoint;
 
     public NetShopMateService() {
+        this(BaseUrl);
+    }
+
+    public NetShopMateService(String baseUrl) {
         try {
-            endpoint = new JsonEndpoint(BaseUrl);
+            endpoint = new JsonEndpoint(baseUrl);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -86,6 +92,21 @@ public class NetShopMateService implements ShopMateService {
                 throwIfRequestFailed(response);
                 ShoppingListJson result = response.getResult().get();
                 return new CreateShoppingListResult(result.getId(), result.toShoppingList());
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> leaveListAsync(final String fbToken, final long listId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                LeaveListRequest request = new LeaveListRequest(fbToken);
+                String url = String.format(LeaveListUrl, listId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
             }
         });
     }

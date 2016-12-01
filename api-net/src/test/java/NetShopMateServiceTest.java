@@ -22,12 +22,14 @@ import java.util.concurrent.ExecutionException;
 
 public class NetShopMateServiceTest {
 
+    private static final String BaseUrl = "http://127.0.0.1:8080/api/";
+
     // Set this to a token from a test user for testing to work...
     // TODO: Create a dummy token on the server or something which always validates?
-    private static final String TestToken = "EAAQZAwjV0NNsBABSykBY7svBtKNXaVszqzF5MefJOuK45R4No03QdTZCRZB5i36lladoTGZB9lWmNAgY16OONxcUEFE6z573gRogRTnLUb1wO5lNsNFWMvkWufWSGZC7YK2BZAmRyzJ1uMwIHnVYsd20ZCZA0F1KxDmwiQq7jE1XbUS2MAlU67WK";
+    private static final String TestToken = "EAAQZAwjV0NNsBALu8nlEW4QAYsGhDLv8EN70ubXr55WOeFCYrOvpIIUxW5PKdYYZBpScvDLhL0TN9qW3BkTl4KBNvq3fhzKNNGIHOSH8KEl6kkO4qRjx61BGwQoGRGHGRTfgF3SQlGRZBRU26kJUarZChgy2bUzYspAwiqGxHForjSFlbKFT";
     private static final String TestId = "136682413460238";
 
-    private static final String TestToken2 = "EAAQZAwjV0NNsBAEtywCse4WFZBmVPVgF3xVNvmZAC0HnkhPncH871ZA7nMYwTfVTnQZBKaGbtduCWZBCy21E7ZC7cQRdKqpHJEjKP77FOX2xsm1qhIVMXJ1rFHZAMdZAwrc4qFJnilJLKDKqJEkS3FfxjEZCBpHJAiZAu1qxviCbmeHwBmEN8vf5u2T";
+    private static final String TestToken2 = "EAAQZAwjV0NNsBAOLRL86Ta614FUC8PRuiEVk7o7hvysvsZBgLLqObmxlgHAGEmdomuquiVmJ4Brw0z7M0VlRk5soqLwjkBe476IJ3lGdzD9iMVZBkgj8xSSfoKTLDig9hbd3dVLPzjhbmyzo1S7BBhqjlzJbntYVHZBd4FV1usZAlqpZAvZAMij";
     private static final String TestId2 = "132318773909242";
 
     private static final String TestListName = "Test List";
@@ -45,7 +47,7 @@ public class NetShopMateServiceTest {
 
     @Before
     public void before() {
-        service = new NetShopMateService();
+        service = new NetShopMateService(BaseUrl);
     }
 
     @Test
@@ -64,6 +66,16 @@ public class NetShopMateServiceTest {
         ShoppingList actual = service.getListAndItemsAsync(TestToken, result.getId()).get();
         Assert.assertEquals(expected.getTitle(), actual.getTitle());
         Assert.assertEquals(expected.getCreatorId(), actual.getCreatorId());
+    }
+
+    @Test
+    public void testCreatingAndLeavingList() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult result = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        GetAllShoppingListsResult lists = service.getAllListsNoItemsAsync(TestToken).get();
+        Assert.assertTrue(lists.getLists().containsKey(result.getId()));
+        service.leaveListAsync(TestToken, result.getId()).get();
+        lists = service.getAllListsNoItemsAsync(TestToken).get();
+        Assert.assertFalse(lists.getLists().containsKey(result.getId()));
     }
 
     @Test
