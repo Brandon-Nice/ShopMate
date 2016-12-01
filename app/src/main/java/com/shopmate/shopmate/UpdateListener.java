@@ -21,6 +21,7 @@ public class UpdateListener {
 
     private static final String ACTION_INVITED = "invited";
     private static final String ACTION_LIST_SHARED = "listShared";
+    private static final String ACTION_LIST_LEFT = "listLeft";
     private static final String ACTION_ITEM_ADDED = "itemAdded";
     private static final String ACTION_ITEM_UPDATED = "itemUpdated";
 
@@ -61,6 +62,9 @@ public class UpdateListener {
             case ACTION_LIST_SHARED:
                 handleListShared(intent);
                 break;
+            case ACTION_LIST_LEFT:
+                handleListLeft(intent);
+                break;
             case ACTION_ITEM_ADDED:
                 handleItemAdded(intent);
                 break;
@@ -82,6 +86,11 @@ public class UpdateListener {
     private void handleListShared(Intent intent) {
         long listId = Long.parseLong(intent.getStringExtra(KEY_LIST_ID));
         handler.onListShared(listId);
+    }
+
+    private void handleListLeft(Intent intent) {
+        long listId = Long.parseLong(intent.getStringExtra(KEY_LIST_ID));
+        handler.onListLeft(listId);
     }
 
     private void handleItemAdded(Intent intent) {

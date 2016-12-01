@@ -7,6 +7,9 @@ public abstract class UpdateHandler {
     public void onListShared(long listId) {
     }
 
+    public void onListLeft(long listId) {
+    }
+
     public void onItemAdded(long listId, long itemId) {
     }
 
