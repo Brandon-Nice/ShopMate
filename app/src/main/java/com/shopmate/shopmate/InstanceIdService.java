@@ -29,7 +29,12 @@ public class InstanceIdService extends FirebaseInstanceIdService {
             return;
         }
         Log.d(TAG, "Registering FCM token: " + fcmToken);
-        String fbToken = AccessToken.getCurrentAccessToken().getToken();
+        AccessToken currentToken = AccessToken.getCurrentAccessToken();
+        if (currentToken == null) {
+            Log.d(TAG, "Facebook token is not available yet");
+            return;
+        }
+        String fbToken = currentToken.getToken();
         ShopMateService service = ShopMateServiceProvider.get();
         Futures.addCallback(service.registerFcmTokenAsync(fbToken, fcmToken), new FutureCallback<Void>() {
             @Override
