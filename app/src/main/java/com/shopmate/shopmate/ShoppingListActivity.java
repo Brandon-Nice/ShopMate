@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.google.common.util.concurrent.FutureCallback;
@@ -120,12 +121,14 @@ public class ShoppingListActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == ADD_ITEM_REQUEST) {
                 final Intent d = data;
+                double price = Double.parseDouble(d.getStringExtra("item_price"));
+                price *= 100;
                 final ShoppingListItemBuilder bld = new ShoppingListItemBuilder(null)
                         .name(d.getStringExtra("item_name"))
-                        //TODO: fix this from crashing
                         .imageUrl(d.getStringExtra("item_img"))
-                        .priority(convertPriority(d.getStringExtra("item_prio")));
-
+                        .priority(convertPriority(d.getStringExtra("item_prio")))
+                        .quantity(Integer.parseInt(d.getStringExtra("item_quan")))
+                        .maxPriceCents(((int) price));
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -200,13 +203,14 @@ public class ShoppingListActivity extends AppCompatActivity {
                 view = convertView;
             }
 
+            //Puts the name in for each item
             String itemName = items.get(position).getName();
 
             CheckBox checkBox = (CheckBox) view.findViewById(R.id.itemCheckBox);
             checkBox.setText(itemName);
 
+            //Puts the image in for each item
             ImageView imageView = (ImageView) view.findViewById(R.id.itemImageView);
-            //TODO: change default image
             String imageURL = "http://1030news.com/wp-content/themes/fearless/images/missing-image-640x360.png";
                     if(items.get(position).getImageUrl().isPresent() && items.get(position).getImageUrl().get() != "") {
                         imageURL = items.get(position).getImageUrl().get();
@@ -225,7 +229,19 @@ public class ShoppingListActivity extends AppCompatActivity {
                         .resize(150, 150)
                         .into(imageView);
             }
+
+            //Puts the quantity in for each item
+            TextView listItemQuantity = (TextView) view.findViewById(R.id.listItemQuantity);
+            listItemQuantity.setText("Quantity: " + Integer.toString(items.get(position).getQuantity()));
+
+            //Puts the price in for each item
+            TextView listItemPrice = (TextView) view.findViewById(R.id.listItemPrice);
+            double price = ((double) items.get(position).getMaxPriceCents().get() / 100);
+            listItemPrice.setText("Price: $" + Double.toString(price));
+
+
             return view;
+
         }
     }
 }
