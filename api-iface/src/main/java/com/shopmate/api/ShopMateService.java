@@ -27,6 +27,14 @@ public interface ShopMateService {
     ListenableFuture<CreateShoppingListResult> createListAsync(String fbToken, String title, ImmutableSet<String> inviteUserIds);
 
     /**
+     * Asynchronously requests to leave a shopping list.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param listId The ID of the list to leave.
+     */
+    ListenableFuture<Void> leaveListAsync(String fbToken, long listId);
+
+    /**
      * Asynchronously gets information about a single shopping list and the items in it.
      * The user must have access to the list or else this will fail with a BAD_REQUEST error.
      *

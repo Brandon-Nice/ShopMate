@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.item.ShoppingListItemBuilder;
+import com.squareup.picasso.Picasso;
 
 public class WalmartSearch extends AppCompatActivity {
 
@@ -74,11 +76,10 @@ public class WalmartSearch extends AppCompatActivity {
                 b.putString("itemDesc", resultItem.getDescription());
                 b.putString("itemImage", resultItem.getImageUrl().get());
 
-                Intent i = new Intent(WalmartSearch.this, AddItemActivity.class);
-                i.putExtra("CAME_FROM", "WalmartSearch");
+                Intent i = new Intent();
                 i.putExtras(b);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
+                setResult(RESULT_OK, i);
+                finish();
 
             }
         });
@@ -166,11 +167,13 @@ public class WalmartSearch extends AppCompatActivity {
                         String name = JSONitem.getString("name");
                         Double price = JSONitem.getDouble("salePrice");
                         int priceCents = (int)(price*100);
-                        String descr = JSONitem.getString("shortDescription");
+                        String descr;
+                        if (JSONitem.has("shortDescription")) {
+                            descr = JSONitem.getString("shortDescription");
+                        } else { // I haven't been able to get shortDescription to work consistently and Walmart says that longDescription will always work
+                            descr = JSONitem.getString("longDescription");
+                        }
                         String image = JSONitem.getString("thumbnailImage");
-
-                        //Item tempItem = new Item(name, price, descr, image);
-                        //walmartResult.add(tempItem);
 
                         System.out.println(name + ": " + price);
 
@@ -185,6 +188,7 @@ public class WalmartSearch extends AppCompatActivity {
                 return json;
             }
             catch(JSONException e) {
+                Toast.makeText(WalmartSearch.this, "didn't work", Toast.LENGTH_SHORT);
                 e.printStackTrace();
             }
             finally {
@@ -220,7 +224,8 @@ public class WalmartSearch extends AppCompatActivity {
             }
 
             String itemName = items.get(position).getName();
-            int itemPrice = items.get(position).getMaxPriceCents().get();
+            double itemPrice = ((double)items.get(position).getMaxPriceCents().get() / 100);
+            String itemPriceName = Double.toString(itemPrice);
             String itemPicture = items.get(position).getImageUrl().get();
 
 
@@ -228,11 +233,13 @@ public class WalmartSearch extends AppCompatActivity {
             textViewName.setTextColor(Color.BLACK);
             textViewName.setText(itemName);
 
-            TextView textViewPrice = (TextView) view.findViewById(R.id.itemPrice);
-            //textViewPrice.setText(itemPrice);
+            TextView textViewPrice = (TextView) view.findViewById(R.id.itemPriceList);
+            textViewPrice.setTextColor(Color.BLACK);
+            textViewPrice.setText("$" + itemPriceName);
 
             ImageView imageView = (ImageView) view.findViewById(R.id.itemImage);
             //TODO: use Picasso to add image
+            Picasso.with(getApplicationContext()).load(itemPicture).into(imageView);
 
             return view;
         }
