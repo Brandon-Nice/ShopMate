@@ -320,7 +320,7 @@ public class MainActivity extends AppCompatActivity
             String appLinkUrl, previewImageUrl;
 
             appLinkUrl = "https://fb.me/1210406722382112";
-            previewImageUrl = "http://www.beliefnet.com/columnists/bemore/files/2013/11/bigstock-Hacker-Typing-On-A-Laptop-44548564.jpg";
+            previewImageUrl = "https://i.imgur.com/UWuC035.png";
 
             if(AppInviteDialog.canShow()) {
                 AppInviteContent content = new AppInviteContent.Builder()
