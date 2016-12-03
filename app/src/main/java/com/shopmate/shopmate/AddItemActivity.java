@@ -13,6 +13,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -72,16 +74,6 @@ public class AddItemActivity extends AppCompatActivity {
         final ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.importance_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-
-        // For the Walmart Search feature
-        ((ImageButton)findViewById(R.id.addWalmart)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent init = new Intent(AddItemActivity.this, WalmartSearch.class);
-                init.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivityForResult(init, WALMART_SEARCH);
-            }
-        });
 
         // For the checkmark to be pressed (on the bottom) once the user adds an item
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -295,4 +287,28 @@ public class AddItemActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.walmart_search_button, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.walmart_search_bar) {
+            Intent init = new Intent(AddItemActivity.this, WalmartSearch.class);
+            init.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivityForResult(init, WALMART_SEARCH);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }

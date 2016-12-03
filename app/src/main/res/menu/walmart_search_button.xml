@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/walmart_search_bar"
+        android:orderInCategory="100"
+        android:icon="@mipmap/walmart_logo_new"
+        android:title="Search Walmart"
+        app:showAsAction="always" />
+</menu>
