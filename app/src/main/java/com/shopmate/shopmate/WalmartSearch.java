@@ -58,16 +58,16 @@ public class WalmartSearch extends AppCompatActivity {
 
         findViewById(R.id.loadingPanel).setVisibility(View.INVISIBLE);
 
-        ((Button)findViewById(R.id.walmartSearchButton)).setOnClickListener(new View.OnClickListener() {
+        (findViewById(R.id.walmartSearchButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 walmartEditText = (EditText) findViewById(R.id.walmartEditText);
                 searchTerms = walmartEditText.getText().toString();
-                if (searchTerms != null && !searchTerms.equals(" ") && !searchTerms.equals("")) {
+                if (!searchTerms.equals(" ") && !searchTerms.equals("")) {
                     new JSONParse().execute();
                 }
                 else {
-                    //TODO: Toast message saying to enter a field in the textbox
+                    walmartEditText.setError("Search text is required!");
                 }
                 View view = getCurrentFocus();
                 if (view != null) {
@@ -106,7 +106,12 @@ public class WalmartSearch extends AppCompatActivity {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if(actionId == EditorInfo.IME_ACTION_SEARCH) {
                     searchTerms = v.getText().toString();
-                    new JSONParse().execute();
+                    if (!searchTerms.equals(" ") && !searchTerms.equals("")) {
+                        new JSONParse().execute();
+                    }
+                    else {
+                        walmartEditText.setError("Search text is required!");
+                    }
 
                     View view = getCurrentFocus();
                     if (view != null) {
@@ -143,7 +148,7 @@ public class WalmartSearch extends AppCompatActivity {
 
         char[] buffer = new char[1024];
 
-        String jsonString = new String();
+        String jsonString;
 
         StringBuilder sb = new StringBuilder();
         String line;
@@ -198,7 +203,8 @@ public class WalmartSearch extends AppCompatActivity {
             try {
                 JSONObject json = getJSONObjectFromURL(url);
                     JSONArray jsonArray = json.getJSONArray("items");
-                    System.out.println(jsonArray.toString());
+                    int numItems = json.getInt("numItems");
+                    System.out.println("numItems: " + numItems);
 
                     walmartResult = new ArrayList<ShoppingListItem>();
 
@@ -224,6 +230,9 @@ public class WalmartSearch extends AppCompatActivity {
                                 .build();
 
                         walmartResult.add(Item);
+                        if(numItems == 0) {
+                            walmartResult = null;
+                        }
                     }
                 return json;
             }
@@ -238,8 +247,13 @@ public class WalmartSearch extends AppCompatActivity {
 
         protected void onPostExecute(JSONObject result) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-            ShoppingListItemAdapter shoppingListItemAdapter = new ShoppingListItemAdapter(getApplicationContext(), R.layout.shopping_list_item, walmartResult);
-            walmartList.setAdapter(shoppingListItemAdapter);
+            if(walmartResult != null && walmartResult.size() > 0) {
+                ShoppingListItemAdapter shoppingListItemAdapter = new ShoppingListItemAdapter(getApplicationContext(), R.layout.shopping_list_item, walmartResult);
+                walmartList.setAdapter(shoppingListItemAdapter);
+            }
+            else {
+                Toast.makeText(WalmartSearch.this, "Resulsts not found! Please try again.", Toast.LENGTH_SHORT);
+            }
         }
     }
     private class ShoppingListItemAdapter extends ArrayAdapter<ShoppingListItem> {
