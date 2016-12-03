@@ -9,6 +9,7 @@ import com.shopmate.api.ShopMateErrorCode;
 import com.shopmate.api.ShopMateException;
 import com.shopmate.api.ShopMateService;
 import com.shopmate.api.model.item.ShoppingListItem;
+import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.api.model.result.CreateShoppingListResult;
@@ -26,13 +27,14 @@ import com.shopmate.api.net.model.request.GetAllListsRequest;
 import com.shopmate.api.net.model.request.GetListRequest;
 import com.shopmate.api.net.model.request.LeaveListRequest;
 import com.shopmate.api.net.model.request.SendInviteRequest;
+import com.shopmate.api.net.model.request.UpdateItemRequest;
 import com.shopmate.api.net.model.response.ApiResponse;
-import com.shopmate.api.net.model.response.CreateItemResponse;
 import com.shopmate.api.net.model.response.ErrorCodes;
 import com.shopmate.api.net.model.response.GetAllInvitesResponse;
 import com.shopmate.api.net.model.response.GetAllListsResponse;
 import com.shopmate.api.net.model.response.GetItemResponse;
 import com.shopmate.api.net.model.response.GetListResponse;
+import com.shopmate.api.net.model.response.CreateItemResponse;
 import com.shopmate.api.net.model.response.SendInviteResponse;
 
 import java.io.IOException;
@@ -52,6 +54,7 @@ public class NetShopMateService implements ShopMateService {
 
     private static final String CreateItemUrl = "/item/create";
     private static final String GetItemUrl = "/item/%s";
+    private static final String UpdateItemUrl = "/item/%s/update";
 
     private static final String AllInvitesUrl = "/invite/all";
     private static final String SendInviteUrl = "/invite/send";
@@ -156,6 +159,21 @@ public class NetShopMateService implements ShopMateService {
                 ApiResponse<CreateItemResponse> response = post(CreateItemUrl, request, responseType);
                 throwIfRequestFailed(response);
                 return response.getResult().get().toResult();
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<ShoppingListItem> updateItemAsync(final String fbToken, final long itemId, final ShoppingListItemUpdate update) {
+        return ThreadPool.submit(new Callable<ShoppingListItem>() {
+            @Override
+            public ShoppingListItem call() throws Exception {
+                UpdateItemRequest request = new UpdateItemRequest(fbToken, update);
+                String url = String.format(UpdateItemUrl, itemId);
+                Type responseType = new TypeToken<ApiResponse<GetItemResponse>>(){}.getType();
+                ApiResponse<GetItemResponse> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return response.getResult().get().toItem();
             }
         });
     }

@@ -3,6 +3,7 @@ package com.shopmate.api;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.shopmate.api.model.item.ShoppingListItem;
+import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.api.model.result.CreateShoppingListResult;
@@ -72,6 +73,16 @@ public interface ShopMateService {
      * @return The actual item that was created.
      */
     ListenableFuture<CreateShoppingListItemResult> createItemAsync(String fbToken, long listId, ShoppingListItem item);
+
+    /**
+     * Asynchronously updates an item.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param itemId The ID of the item to update.
+     * @param update The changes to make to the item. Use ShoppingListItemUpdate.fromDifference() to build this easily.
+     * @return The updated item.
+     */
+    ListenableFuture<ShoppingListItem> updateItemAsync(String fbToken, long itemId, ShoppingListItemUpdate update);
 
     /**
      * Asynchronously gets information about an item.

@@ -5,6 +5,7 @@ import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.item.ShoppingListItemBuilder;
 import com.shopmate.api.model.item.ShoppingListItemHandle;
 import com.shopmate.api.model.item.ShoppingListItemPriority;
+import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.list.ShoppingListInvite;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
@@ -42,6 +43,14 @@ public class NetShopMateServiceTest {
     private static final int TestItemQuantity = 2;
     private static final int TestItemQuantityPurchased = 1;
     private static final ShoppingListItemPriority TestItemPriority = ShoppingListItemPriority.NORMAL;
+
+    private static final String UpdateItemName = "Updated Item";
+    private static final String UpdateItemDescription = "Bar";
+    private static final String UpdateItemImage = "https://i.imgur.com/R390EId.jpg";
+    private static final int UpdateItemPrice = 2000;
+    private static final int UpdateItemQuantity = 100;
+    private static final int UpdateItemQuantityPurchased = 5;
+    private static final ShoppingListItemPriority UpdateItemPriority = ShoppingListItemPriority.HIGH;
 
     private ShopMateService service;
 
@@ -146,6 +155,48 @@ public class NetShopMateServiceTest {
         Assert.assertEquals(testItem.getQuantity(), gotItem.getQuantity());
         Assert.assertEquals(testItem.getQuantityPurchased(), gotItem.getQuantityPurchased());
         Assert.assertEquals(testItem.getPriority(), gotItem.getPriority());
+    }
+
+    @Test
+    public void testCreatingAndUpdatingItem() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+        ShoppingListItem createdItem = createItemResult.getItem();
+        Assert.assertEquals(testItem.getName(), createdItem.getName());
+        Assert.assertEquals(testItem.getDescription(), createdItem.getDescription());
+        Assert.assertTrue(testItem.getImageUrl().isPresent());
+        Assert.assertEquals(testItem.getImageUrl().get(), createdItem.getImageUrl().get());
+        Assert.assertTrue(testItem.getMaxPriceCents().isPresent());
+        Assert.assertEquals(testItem.getQuantity(), createdItem.getQuantity());
+        Assert.assertEquals(testItem.getQuantityPurchased(), createdItem.getQuantityPurchased());
+        Assert.assertEquals(testItem.getPriority(), createdItem.getPriority());
+
+        ShoppingListItem newItem = new ShoppingListItemBuilder(UpdateItemName)
+                .description(UpdateItemDescription)
+                .imageUrl(UpdateItemImage)
+                .maxPriceCents(UpdateItemPrice)
+                .quantity(UpdateItemQuantity)
+                .quantityPurchased(UpdateItemQuantityPurchased)
+                .priority(UpdateItemPriority)
+                .build();
+        ShoppingListItemUpdate update = ShoppingListItemUpdate.fromDifference(testItem, newItem);
+        ShoppingListItem updatedItem = service.updateItemAsync(TestToken, createItemResult.getId(), update).get();
+        Assert.assertEquals(newItem.getName(), updatedItem.getName());
+        Assert.assertEquals(newItem.getDescription(), updatedItem.getDescription());
+        Assert.assertTrue(newItem.getImageUrl().isPresent());
+        Assert.assertEquals(newItem.getImageUrl().get(), updatedItem.getImageUrl().get());
+        Assert.assertTrue(newItem.getMaxPriceCents().isPresent());
+        Assert.assertEquals(newItem.getQuantity(), updatedItem.getQuantity());
+        Assert.assertEquals(newItem.getQuantityPurchased(), updatedItem.getQuantityPurchased());
+        Assert.assertEquals(newItem.getPriority(), updatedItem.getPriority());
     }
 
     @Test
