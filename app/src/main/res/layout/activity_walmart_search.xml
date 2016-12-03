@@ -9,15 +9,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.shopmate.shopmate.WalmartSearch">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Search Walmart:"
-        android:id="@+id/walmartTextView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,9 +17,8 @@
         android:imeOptions="actionSearch"
         android:inputType="textAutoComplete"
         android:id="@+id/walmartEditText"
-        android:layout_below="@+id/walmartTextView"
         android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/walmartTextView" />
+        android:layout_toStartOf="@+id/walmartSearchButton" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -37,7 +27,7 @@
         android:text="Search"
         android:id="@+id/walmartSearchButton"
         android:layout_alignTop="@+id/walmartEditText"
-        android:layout_toEndOf="@+id/walmartEditText" />
+        android:layout_alignParentEnd="true" />
 
     <ListView
         android:layout_width="wrap_content"
@@ -51,7 +41,10 @@
         android:id="@+id/loadingPanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center" >
+        android:gravity="center"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="64dp">
 
         <ProgressBar
             android:layout_width="wrap_content"

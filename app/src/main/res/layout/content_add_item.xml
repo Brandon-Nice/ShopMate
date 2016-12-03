@@ -64,15 +64,6 @@
         android:scaleType="fitCenter"
         android:adjustViewBounds="true" />
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/addWalmart"
-        android:src="@mipmap/walmart_logo"
-        android:layout_below="@+id/itemDesc"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="150dp"
