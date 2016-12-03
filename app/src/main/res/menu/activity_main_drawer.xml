@@ -15,6 +15,11 @@
             android:id="@+id/nav_list_invites"
             android:icon="@drawable/ic_menu_gallery"
             android:title="List Invites" />
+
+        <item
+            android:id="@+id/nav_list_req_history"
+            android:icon="@drawable/ic_history_black_24px"
+            android:title="Request History" />
     </group>
 
     <item android:title="Communicate">
