@@ -11,4 +11,9 @@
         android:orderInCategory="100"
         android:title="Priority"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/leave_list"
+        android:orderInCategory="100"
+        android:title="Leave this list"
+        app:showAsAction="never" />
 </menu>
