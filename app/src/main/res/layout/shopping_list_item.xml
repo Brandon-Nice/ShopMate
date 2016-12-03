@@ -1,26 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/shoppingListLayout">
 
-    <CheckBox
-        android:text="CheckBox"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="5dp"
-        android:id="@+id/itemCheckBox"
-        android:layout_weight="1" />
-    <View
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="N/A"
+        android:paddingLeft="33dp"
+        android:id="@+id/listItemQuantity"
         android:layout_weight="1"
-        />
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentStart="true" />
 
-    <ImageView
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="5dp"
-        android:id="@+id/itemImageView" />
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:paddingLeft="50dp"
+        android:text="N/A"
+        android:id="@+id/listItemPrice"
+        android:layout_below="@+id/linearLayout"
+        android:layout_toEndOf="@+id/listItemQuantity" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:id="@+id/linearLayout">
+        <CheckBox
+            android:text="CheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/itemCheckBox"
+            android:layout_weight="1" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/view"
+            android:layout_weight="1"
+            />
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:paddingTop="5dp"
+            android:layout_gravity="right"
+            android:layout_weight="1"
+            android:id="@+id/itemImageView"/>
+    </LinearLayout>
 
 
-</LinearLayout>
+
+</RelativeLayout>
