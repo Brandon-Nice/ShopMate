@@ -17,6 +17,8 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.google.common.collect.ImmutableSet;
+import com.shopmate.api.net.NetShopMateService;
 import com.squareup.picasso.Picasso;
 import com.facebook.AccessToken;
 import com.google.common.util.concurrent.FutureCallback;
@@ -37,6 +39,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
     static final int ADD_ITEM_REQUEST = 1;
     static ShoppingListItemAdapter sla;
+    private String listId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +48,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         Bundle extras = getIntent().getExtras();
         final String title = extras.getString("title");
-        final String listId = extras.getString("listId");
+        listId = extras.getString("listId");
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
@@ -169,6 +172,11 @@ public class ShoppingListActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.sort_prio) {
             sla.sort(new PrioComparator());
+            return true;
+        } else if (id == R.id.show_members) {
+            Intent intent = new Intent(this, ListMembersActivity.class);
+            intent.putExtra("listId", listId);
+            startActivity(intent);
             return true;
         }
 

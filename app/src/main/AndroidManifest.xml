@@ -47,11 +47,20 @@
         <activity
             android:name=".InviteRequestsActivity"
             android:label="@string/title_activity_invite_requests"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".RequestHistoryActivity"
             android:label="RequestHistoryActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ListMembersActivity"
+            android:label="@string/title_activity_list_members"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.shopmate.shopmate.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
