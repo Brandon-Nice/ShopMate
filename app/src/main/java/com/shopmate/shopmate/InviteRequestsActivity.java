@@ -33,15 +33,20 @@ public class InviteRequestsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invite_requests);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("My List Invites");
 
         try {
             ListView listView = (ListView) findViewById(R.id.inviteList);
             invites = service.getAllInvites(AccessToken.getCurrentAccessToken().getToken()).get().getIncomingInvites();
             RequestListItemAdapter inviteListAdapter = new RequestListItemAdapter(this, R.layout.invite_list_item, invites);
             listView.setAdapter(inviteListAdapter);
-
-            if (invites.isEmpty()) {
-                ((TextView) findViewById(R.id.pendingInvitesText)).setText("No pending invites");
+            TextView defaultlistTitle = (TextView) findViewById(R.id.pendingInvitesText);
+            if (invites.isEmpty()) { //display a default message alerting the user that there are no pending invites that are available
+                defaultlistTitle.setVisibility(View.VISIBLE);
+                defaultlistTitle.setText("No pending invites");
+            }
+            else { //set the visibility to none if there aren't any list invites
+                defaultlistTitle.setVisibility(View.GONE);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
