@@ -47,10 +47,14 @@
         <activity
             android:name=".InviteRequestsActivity"
             android:label="@string/title_activity_invite_requests"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".RequestHistoryActivity"
             android:label="RequestHistoryActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".SharingListsActivity"
+            android:label="@string/title_activity_sharing_lists"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

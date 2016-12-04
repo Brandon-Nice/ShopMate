@@ -31,7 +31,7 @@ import com.shopmate.api.model.list.ShoppingList;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+
 
 public class ShoppingListActivity extends AppCompatActivity {
 
@@ -137,6 +137,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.sorting, menu);
+        getMenuInflater().inflate(R.menu.share_button_menu, menu);
         return true;
     }
 
@@ -170,6 +171,9 @@ public class ShoppingListActivity extends AppCompatActivity {
         } else if (id == R.id.sort_prio) {
             sla.sort(new PrioComparator());
             return true;
+        } else if (id == R.id.share_button){
+            //Open up an activity to select the friend who you want to share a list with
+            startActivity(new Intent(ShoppingListActivity.this, SharingListsActivity.class));
         }
 
         return super.onOptionsItemSelected(item);
