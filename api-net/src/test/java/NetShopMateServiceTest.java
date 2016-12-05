@@ -5,6 +5,7 @@ import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.item.ShoppingListItemBuilder;
 import com.shopmate.api.model.item.ShoppingListItemHandle;
 import com.shopmate.api.model.item.ShoppingListItemPriority;
+import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.list.ShoppingListInvite;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
@@ -43,6 +44,14 @@ public class NetShopMateServiceTest {
     private static final int TestItemQuantityPurchased = 1;
     private static final ShoppingListItemPriority TestItemPriority = ShoppingListItemPriority.NORMAL;
 
+    private static final String UpdateItemName = "Updated Item";
+    private static final String UpdateItemDescription = "Bar";
+    private static final String UpdateItemImage = "https://i.imgur.com/R390EId.jpg";
+    private static final int UpdateItemPrice = 2000;
+    private static final int UpdateItemQuantity = 100;
+    private static final int UpdateItemQuantityPurchased = 5;
+    private static final ShoppingListItemPriority UpdateItemPriority = ShoppingListItemPriority.HIGH;
+
     private ShopMateService service;
 
     @Before
@@ -74,6 +83,16 @@ public class NetShopMateServiceTest {
         GetAllShoppingListsResult lists = service.getAllListsNoItemsAsync(TestToken).get();
         Assert.assertTrue(lists.getLists().containsKey(result.getId()));
         service.leaveListAsync(TestToken, result.getId()).get();
+        lists = service.getAllListsNoItemsAsync(TestToken).get();
+        Assert.assertFalse(lists.getLists().containsKey(result.getId()));
+    }
+
+    @Test
+    public void testCreatingAndDeletingList() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult result = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        GetAllShoppingListsResult lists = service.getAllListsNoItemsAsync(TestToken).get();
+        Assert.assertTrue(lists.getLists().containsKey(result.getId()));
+        service.deleteListAsync(TestToken, result.getId()).get();
         lists = service.getAllListsNoItemsAsync(TestToken).get();
         Assert.assertFalse(lists.getLists().containsKey(result.getId()));
     }
@@ -146,6 +165,67 @@ public class NetShopMateServiceTest {
         Assert.assertEquals(testItem.getQuantity(), gotItem.getQuantity());
         Assert.assertEquals(testItem.getQuantityPurchased(), gotItem.getQuantityPurchased());
         Assert.assertEquals(testItem.getPriority(), gotItem.getPriority());
+    }
+
+    @Test
+    public void testCreatingAndUpdatingItem() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+        ShoppingListItem createdItem = createItemResult.getItem();
+        Assert.assertEquals(testItem.getName(), createdItem.getName());
+        Assert.assertEquals(testItem.getDescription(), createdItem.getDescription());
+        Assert.assertTrue(testItem.getImageUrl().isPresent());
+        Assert.assertEquals(testItem.getImageUrl().get(), createdItem.getImageUrl().get());
+        Assert.assertTrue(testItem.getMaxPriceCents().isPresent());
+        Assert.assertEquals(testItem.getQuantity(), createdItem.getQuantity());
+        Assert.assertEquals(testItem.getQuantityPurchased(), createdItem.getQuantityPurchased());
+        Assert.assertEquals(testItem.getPriority(), createdItem.getPriority());
+
+        ShoppingListItem newItem = new ShoppingListItemBuilder(UpdateItemName)
+                .description(UpdateItemDescription)
+                .imageUrl(UpdateItemImage)
+                .maxPriceCents(UpdateItemPrice)
+                .quantity(UpdateItemQuantity)
+                .quantityPurchased(UpdateItemQuantityPurchased)
+                .priority(UpdateItemPriority)
+                .build();
+        ShoppingListItemUpdate update = ShoppingListItemUpdate.fromDifference(testItem, newItem);
+        ShoppingListItem updatedItem = service.updateItemAsync(TestToken, createItemResult.getId(), update).get();
+        Assert.assertEquals(newItem.getName(), updatedItem.getName());
+        Assert.assertEquals(newItem.getDescription(), updatedItem.getDescription());
+        Assert.assertTrue(newItem.getImageUrl().isPresent());
+        Assert.assertEquals(newItem.getImageUrl().get(), updatedItem.getImageUrl().get());
+        Assert.assertTrue(newItem.getMaxPriceCents().isPresent());
+        Assert.assertEquals(newItem.getQuantity(), updatedItem.getQuantity());
+        Assert.assertEquals(newItem.getQuantityPurchased(), updatedItem.getQuantityPurchased());
+        Assert.assertEquals(newItem.getPriority(), updatedItem.getPriority());
+    }
+
+    @Test
+    public void testCreatingAndDeletingItem() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+        ShoppingList list = service.getListAndItemsAsync(TestToken, createListResult.getId()).get();
+        Assert.assertTrue(indexOfItemById(list.getItems(), createItemResult.getId()) >= 0);
+        service.deleteItemAsync(TestToken, createItemResult.getId()).get();
+        list = service.getListAndItemsAsync(TestToken, createListResult.getId()).get();
+        Assert.assertFalse(indexOfItemById(list.getItems(), createItemResult.getId()) >= 0);
     }
 
     @Test
@@ -325,6 +405,22 @@ public class NetShopMateServiceTest {
         Assert.assertFalse(list.getMemberIds().contains(TestId2));
     }
 
+    @Test
+    public void testInvitingAndRemovingUser() throws ExecutionException, InterruptedException {
+        // make sure test user 2 has an ID
+        service.getAllListsNoItemsAsync(TestToken2).get();
+
+        CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        SendInviteResult sentInvite = service.sendInviteAsync(TestToken, createdList.getId(), TestId2).get();
+        long inviteId = sentInvite.getId();
+        service.acceptInviteAsync(TestToken2, inviteId).get();
+        ShoppingList list = service.getListAndItemsAsync(TestToken, createdList.getId()).get();
+        Assert.assertTrue(list.getMemberIds().contains(TestId2));
+        service.removeUserFromListAsync(TestToken, createdList.getId(), TestId2).get();
+        list = service.getListAndItemsAsync(TestToken, createdList.getId()).get();
+        Assert.assertFalse(list.getMemberIds().contains(TestId2));
+    }
+
     private static int indexOfInviteById(ImmutableList<ShoppingListInvite> invites, long id) {
         for (int i = 0; i < invites.size(); i++) {
             if (invites.get(i).getId() == id) {
@@ -337,6 +433,15 @@ public class NetShopMateServiceTest {
     private static int indexOfInviteByName(ImmutableList<ShoppingListInvite> invites, String name) {
         for (int i = 0; i < invites.size(); i++) {
             if (invites.get(i).getListTitle().equals(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int indexOfItemById(ImmutableList<ShoppingListItemHandle> items, long id) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getId() == id) {
                 return i;
             }
         }

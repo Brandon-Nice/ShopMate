@@ -34,6 +34,8 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
+import com.facebook.share.model.AppInviteContent;
+import com.facebook.share.widget.AppInviteDialog;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -377,13 +379,20 @@ public class MainActivity extends AppCompatActivity
             startActivity(new Intent(MainActivity.this, InviteRequestsActivity.class));
         } else if (id == R.id.nav_list_req_history) {
             startActivity(new Intent(MainActivity.this, RequestHistoryActivity.class));
-        }
+        } else if (id == R.id.nav_share) {
+            String appLinkUrl, previewImageUrl;
 
-//        } else if (id == R.id.nav_share) {
-//
-//        } else if (id == R.id.nav_send) {
-//
-//        }
+            appLinkUrl = "https://fb.me/1210406722382112";
+            previewImageUrl = "https://i.imgur.com/UWuC035.png";
+
+            if (AppInviteDialog.canShow()) {
+                AppInviteContent content = new AppInviteContent.Builder()
+                        .setApplinkUrl(appLinkUrl)
+                        .setPreviewImageUrl(previewImageUrl)
+                        .build();
+                AppInviteDialog.show(this, content);
+            }
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
