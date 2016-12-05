@@ -210,6 +210,25 @@ public class NetShopMateServiceTest {
     }
 
     @Test
+    public void testCreatingAndDeletingItem() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+        ShoppingList list = service.getListAndItemsAsync(TestToken, createListResult.getId()).get();
+        Assert.assertTrue(indexOfItemById(list.getItems(), createItemResult.getId()) >= 0);
+        service.deleteItemAsync(TestToken, createItemResult.getId()).get();
+        list = service.getListAndItemsAsync(TestToken, createListResult.getId()).get();
+        Assert.assertFalse(indexOfItemById(list.getItems(), createItemResult.getId()) >= 0);
+    }
+
+    @Test
     public void testGettingAllInvites() throws ExecutionException, InterruptedException {
         checkInvites(TestToken, TestId);
         checkInvites(TestToken2, TestId2);
@@ -398,6 +417,15 @@ public class NetShopMateServiceTest {
     private static int indexOfInviteByName(ImmutableList<ShoppingListInvite> invites, String name) {
         for (int i = 0; i < invites.size(); i++) {
             if (invites.get(i).getListTitle().equals(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int indexOfItemById(ImmutableList<ShoppingListItemHandle> items, long id) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getId() == id) {
                 return i;
             }
         }

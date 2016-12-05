@@ -85,6 +85,7 @@ public interface ShopMateService {
 
     /**
      * Asynchronously updates an item.
+     * The user must have access to the item's list or else this will fail with a BAD_REQUEST error.
      *
      * @param fbToken The user's Facebook token.
      * @param itemId The ID of the item to update.
@@ -92,6 +93,15 @@ public interface ShopMateService {
      * @return The updated item.
      */
     ListenableFuture<ShoppingListItem> updateItemAsync(String fbToken, long itemId, ShoppingListItemUpdate update);
+
+    /**
+     * Asynchronously deletes an item.
+     * The user must have access to the item's list or else this will fail with a BAD_REQUEST error.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param itemId The ID of the item to delete.
+     */
+    ListenableFuture<Void> deleteItemAsync(String fbToken, long itemId);
 
     /**
      * Asynchronously gets information about an item.

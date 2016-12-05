@@ -57,6 +57,7 @@ public class NetShopMateService implements ShopMateService {
     private static final String CreateItemUrl = "/item/create";
     private static final String GetItemUrl = "/item/%s";
     private static final String UpdateItemUrl = "/item/%s/update";
+    private static final String DeleteItemUrl = "/item/%s/delete";
 
     private static final String AllInvitesUrl = "/invite/all";
     private static final String SendInviteUrl = "/invite/send";
@@ -191,6 +192,21 @@ public class NetShopMateService implements ShopMateService {
                 ApiResponse<GetItemResponse> response = post(url, request, responseType);
                 throwIfRequestFailed(response);
                 return response.getResult().get().toItem();
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> deleteItemAsync(final String fbToken, final long itemId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
+                String url = String.format(DeleteItemUrl, itemId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
             }
         });
     }
