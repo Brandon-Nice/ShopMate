@@ -292,6 +292,7 @@ public class MainActivity extends AppCompatActivity
                     ShoppingListEntry entry = a.getItem(i);
                     if (entry.getId() == listId) {
                         a.remove(entry);
+                        break;
                     }
                 }
             }
@@ -308,6 +309,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         updateListener.unregister();
     }
 

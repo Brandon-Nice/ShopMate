@@ -56,7 +56,7 @@ public class UpdateListener {
 
     private void handleMessage(Intent intent) {
         String action = intent.getStringExtra(KEY_ACTION);
-        Log.d(TAG, "Received action " + action);
+        Log.d(TAG, "Received action " + action + " for activity " + activity.getLocalClassName());
         switch (action) {
             case ACTION_INVITED:
                 handleInvited(intent);
