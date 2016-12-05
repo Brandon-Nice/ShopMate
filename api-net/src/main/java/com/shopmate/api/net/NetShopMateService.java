@@ -17,26 +17,20 @@ import com.shopmate.api.model.result.GetAllInvitesResult;
 import com.shopmate.api.model.result.GetAllShoppingListsResult;
 import com.shopmate.api.model.result.SendInviteResult;
 import com.shopmate.api.net.model.list.ShoppingListJson;
-import com.shopmate.api.net.model.request.AcceptInviteRequest;
 import com.shopmate.api.net.model.request.AuthenticatedRequest;
-import com.shopmate.api.net.model.request.CancelInviteRequest;
 import com.shopmate.api.net.model.request.CreateItemRequest;
 import com.shopmate.api.net.model.request.CreateListRequest;
-import com.shopmate.api.net.model.request.DeclineInviteRequest;
-import com.shopmate.api.net.model.request.GetAllInvitesRequest;
 import com.shopmate.api.net.model.request.GetAllListsRequest;
-import com.shopmate.api.net.model.request.GetListRequest;
 import com.shopmate.api.net.model.request.KickUserRequest;
-import com.shopmate.api.net.model.request.LeaveListRequest;
 import com.shopmate.api.net.model.request.SendInviteRequest;
 import com.shopmate.api.net.model.request.UpdateItemRequest;
 import com.shopmate.api.net.model.response.ApiResponse;
+import com.shopmate.api.net.model.response.CreateItemResponse;
 import com.shopmate.api.net.model.response.ErrorCodes;
 import com.shopmate.api.net.model.response.GetAllInvitesResponse;
 import com.shopmate.api.net.model.response.GetAllListsResponse;
 import com.shopmate.api.net.model.response.GetItemResponse;
 import com.shopmate.api.net.model.response.GetListResponse;
-import com.shopmate.api.net.model.response.CreateItemResponse;
 import com.shopmate.api.net.model.response.SendInviteResponse;
 
 import java.io.IOException;
@@ -121,7 +115,7 @@ public class NetShopMateService implements ShopMateService {
         return ThreadPool.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                LeaveListRequest request = new LeaveListRequest(fbToken);
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
                 String url = String.format(LeaveListUrl, listId);
                 Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
                 ApiResponse<Void> response = post(url, request, responseType);
@@ -151,7 +145,7 @@ public class NetShopMateService implements ShopMateService {
         return ThreadPool.submit(new Callable<ShoppingList>() {
             @Override
             public ShoppingList call() throws Exception {
-                GetListRequest request = new GetListRequest(fbToken);
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
                 String url = String.format(GetListUrl, listId);
                 Type responseType = new TypeToken<ApiResponse<GetListResponse>>(){}.getType();
                 ApiResponse<GetListResponse> response = post(url, request, responseType);
@@ -233,7 +227,7 @@ public class NetShopMateService implements ShopMateService {
         return ThreadPool.submit(new Callable<ShoppingListItem>() {
             @Override
             public ShoppingListItem call() throws Exception {
-                GetListRequest request = new GetListRequest(fbToken);
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
                 String url = String.format(GetItemUrl, itemId);
                 Type responseType = new TypeToken<ApiResponse<GetItemResponse>>(){}.getType();
                 ApiResponse<GetItemResponse> response = post(url, request, responseType);
@@ -248,7 +242,7 @@ public class NetShopMateService implements ShopMateService {
         return ThreadPool.submit(new Callable<GetAllInvitesResult>() {
             @Override
             public GetAllInvitesResult call() throws Exception {
-                GetAllInvitesRequest request = new GetAllInvitesRequest(fbToken);
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
                 Type responseType = new TypeToken<ApiResponse<GetAllInvitesResponse>>(){}.getType();
                 ApiResponse<GetAllInvitesResponse> response = post(AllInvitesUrl, request, responseType);
                 throwIfRequestFailed(response);
@@ -276,7 +270,7 @@ public class NetShopMateService implements ShopMateService {
         return ThreadPool.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                AcceptInviteRequest request = new AcceptInviteRequest(fbToken);
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
                 String url = String.format(AcceptInviteUrl, inviteId);
                 Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
                 ApiResponse<Void> response = post(url, request, responseType);
@@ -291,7 +285,7 @@ public class NetShopMateService implements ShopMateService {
         return ThreadPool.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                DeclineInviteRequest request = new DeclineInviteRequest(fbToken);
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
                 String url = String.format(DeclineInviteUrl, inviteId);
                 Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
                 ApiResponse<Void> response = post(url, request, responseType);
@@ -306,7 +300,7 @@ public class NetShopMateService implements ShopMateService {
         return ThreadPool.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                CancelInviteRequest request = new CancelInviteRequest(fbToken);
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
                 String url = String.format(CancelInviteUrl, inviteId);
                 Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
                 ApiResponse<Void> response = post(url, request, responseType);
