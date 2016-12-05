@@ -26,6 +26,7 @@ import com.shopmate.api.net.model.request.DeclineInviteRequest;
 import com.shopmate.api.net.model.request.GetAllInvitesRequest;
 import com.shopmate.api.net.model.request.GetAllListsRequest;
 import com.shopmate.api.net.model.request.GetListRequest;
+import com.shopmate.api.net.model.request.KickUserRequest;
 import com.shopmate.api.net.model.request.LeaveListRequest;
 import com.shopmate.api.net.model.request.SendInviteRequest;
 import com.shopmate.api.net.model.request.UpdateItemRequest;
@@ -53,6 +54,7 @@ public class NetShopMateService implements ShopMateService {
     private static final String GetListUrl = "/list/%s";
     private static final String LeaveListUrl = "/list/%s/leave";
     private static final String DeleteListUrl = "/list/%s/delete";
+    private static final String KickUserUrl = "/list/%s/kick";
 
     private static final String CreateItemUrl = "/item/create";
     private static final String GetItemUrl = "/item/%s";
@@ -121,6 +123,21 @@ public class NetShopMateService implements ShopMateService {
             public Void call() throws Exception {
                 LeaveListRequest request = new LeaveListRequest(fbToken);
                 String url = String.format(LeaveListUrl, listId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> removeUserFromListAsync(final String fbToken, final long listId, final String removeUserId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                KickUserRequest request = new KickUserRequest(fbToken, removeUserId);
+                String url = String.format(KickUserUrl, listId);
                 Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
                 ApiResponse<Void> response = post(url, request, responseType);
                 throwIfRequestFailed(response);

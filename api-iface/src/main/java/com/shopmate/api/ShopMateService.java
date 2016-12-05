@@ -45,6 +45,16 @@ public interface ShopMateService {
     ListenableFuture<Void> leaveListAsync(String fbToken, long listId);
 
     /**
+     * Asynchronously requests to remove a user from a shopping list.
+     * The requesting user must be the list's creator.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param listId The ID of the list to remove a user from.
+     * @param removeUserId The FBID of the user to remove from the list.
+     */
+    ListenableFuture<Void> removeUserFromListAsync(String fbToken, long listId, String removeUserId);
+
+    /**
      * Asynchronously gets information about a single shopping list and the items in it.
      * The user must have access to the list or else this will fail with a BAD_REQUEST error.
      *

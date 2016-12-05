@@ -405,6 +405,22 @@ public class NetShopMateServiceTest {
         Assert.assertFalse(list.getMemberIds().contains(TestId2));
     }
 
+    @Test
+    public void testInvitingAndRemovingUser() throws ExecutionException, InterruptedException {
+        // make sure test user 2 has an ID
+        service.getAllListsNoItemsAsync(TestToken2).get();
+
+        CreateShoppingListResult createdList = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        SendInviteResult sentInvite = service.sendInviteAsync(TestToken, createdList.getId(), TestId2).get();
+        long inviteId = sentInvite.getId();
+        service.acceptInviteAsync(TestToken2, inviteId).get();
+        ShoppingList list = service.getListAndItemsAsync(TestToken, createdList.getId()).get();
+        Assert.assertTrue(list.getMemberIds().contains(TestId2));
+        service.removeUserFromListAsync(TestToken, createdList.getId(), TestId2).get();
+        list = service.getListAndItemsAsync(TestToken, createdList.getId()).get();
+        Assert.assertFalse(list.getMemberIds().contains(TestId2));
+    }
+
     private static int indexOfInviteById(ImmutableList<ShoppingListInvite> invites, long id) {
         for (int i = 0; i < invites.size(); i++) {
             if (invites.get(i).getId() == id) {
