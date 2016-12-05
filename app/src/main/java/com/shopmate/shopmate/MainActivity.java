@@ -287,12 +287,19 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onListLeft(long listId) {
+            public void onListDeleted(long listId) {
                 for (int i = 0; i < a.getCount(); i++) {
                     ShoppingListEntry entry = a.getItem(i);
                     if (entry.getId() == listId) {
                         a.remove(entry);
                     }
+                }
+            }
+
+            @Override
+            public void onListMemberLeft(long listId, String userId) {
+                if (userId == AccessToken.getCurrentAccessToken().getUserId()) {
+                    onListDeleted(listId);
                 }
             }
         });

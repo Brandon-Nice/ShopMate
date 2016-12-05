@@ -18,12 +18,14 @@ public class UpdateListener {
     private static final String KEY_INVITE_ID = "inviteId";
     private static final String KEY_LIST_ID = "listId";
     private static final String KEY_ITEM_ID = "itemId";
+    private static final String KEY_USER_ID = "userId";
 
     private static final String ACTION_INVITED = "invited";
     private static final String ACTION_LIST_SHARED = "listShared";
-    private static final String ACTION_LIST_LEFT = "listLeft";
+    private static final String ACTION_LIST_MEMBER_LEFT = "listMemberLeft";
     private static final String ACTION_ITEM_ADDED = "itemAdded";
     private static final String ACTION_ITEM_UPDATED = "itemUpdated";
+    private static final String ACTION_ITEM_DELETED = "itemDeleted";
 
     private final Activity activity;
     private final UpdateHandler handler;
@@ -62,14 +64,17 @@ public class UpdateListener {
             case ACTION_LIST_SHARED:
                 handleListShared(intent);
                 break;
-            case ACTION_LIST_LEFT:
-                handleListLeft(intent);
+            case ACTION_LIST_MEMBER_LEFT:
+                handleListMemberLeft(intent);
                 break;
             case ACTION_ITEM_ADDED:
                 handleItemAdded(intent);
                 break;
             case ACTION_ITEM_UPDATED:
                 handleItemUpdated(intent);
+                break;
+            case ACTION_ITEM_DELETED:
+                handleItemDeleted(intent);
                 break;
             default:
                 Log.w(TAG, "Unsupported action " + action);
@@ -88,9 +93,10 @@ public class UpdateListener {
         handler.onListShared(listId);
     }
 
-    private void handleListLeft(Intent intent) {
+    private void handleListMemberLeft(Intent intent) {
         long listId = Long.parseLong(intent.getStringExtra(KEY_LIST_ID));
-        handler.onListLeft(listId);
+        String userId = intent.getStringExtra(KEY_USER_ID);
+        handler.onListMemberLeft(listId, userId);
     }
 
     private void handleItemAdded(Intent intent) {
@@ -100,8 +106,12 @@ public class UpdateListener {
     }
 
     private void handleItemUpdated(Intent intent) {
-        long listId = Long.parseLong(intent.getStringExtra(KEY_LIST_ID));
         long itemId = Long.parseLong(intent.getStringExtra(KEY_ITEM_ID));
-        handler.onItemUpdated(listId, itemId);
+        handler.onItemUpdated(itemId);
+    }
+
+    private void handleItemDeleted(Intent intent) {
+        long itemId = Long.parseLong(intent.getStringExtra(KEY_ITEM_ID));
+        handler.onItemDeleted(itemId);
     }
 }

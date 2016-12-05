@@ -7,12 +7,18 @@ public abstract class UpdateHandler {
     public void onListShared(long listId) {
     }
 
-    public void onListLeft(long listId) {
+    public void onListDeleted(long listId) {
+    }
+
+    public void onListMemberLeft(long listId, String userId) {
     }
 
     public void onItemAdded(long listId, long itemId) {
     }
 
-    public void onItemUpdated(long listId, long itemId) {
+    public void onItemUpdated(long itemId) {
+    }
+
+    public void onItemDeleted(long itemId) {
     }
 }
