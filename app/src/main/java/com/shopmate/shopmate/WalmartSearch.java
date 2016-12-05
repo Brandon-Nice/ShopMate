@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -56,11 +57,16 @@ public class WalmartSearch extends AppCompatActivity {
             public void onClick(View v) {
                 walmartEditText = (EditText) findViewById(R.id.walmartEditText);
                 String searchTerms = walmartEditText.getText().toString();
-                if (searchTerms != null || !searchTerms.equals(" ")) {
+                if (searchTerms != null && !searchTerms.equals(" ") && !searchTerms.equals("")) {
                     new JSONParse().execute();
                 }
                 else {
                     //TODO: Toast message saying to enter a field in the textbox
+                }
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
             }
 
@@ -197,7 +203,6 @@ public class WalmartSearch extends AppCompatActivity {
         }
 
         protected void onPostExecute(JSONObject result) {
-            //TODO: Place arraylist in listView
             ShoppingListItemAdapter shoppingListItemAdapter = new ShoppingListItemAdapter(getApplicationContext(), R.layout.shopping_list_item, walmartResult);
             walmartList.setAdapter(shoppingListItemAdapter);
         }
