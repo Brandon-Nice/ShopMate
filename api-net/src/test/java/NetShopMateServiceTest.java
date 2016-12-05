@@ -88,6 +88,16 @@ public class NetShopMateServiceTest {
     }
 
     @Test
+    public void testCreatingAndDeletingList() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult result = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        GetAllShoppingListsResult lists = service.getAllListsNoItemsAsync(TestToken).get();
+        Assert.assertTrue(lists.getLists().containsKey(result.getId()));
+        service.deleteListAsync(TestToken, result.getId()).get();
+        lists = service.getAllListsNoItemsAsync(TestToken).get();
+        Assert.assertFalse(lists.getLists().containsKey(result.getId()));
+    }
+
+    @Test
     public void testGettingAllListsNoItems() throws ExecutionException, InterruptedException {
         GetAllShoppingListsResult lists = service.getAllListsNoItemsAsync(TestToken).get();
         for (ShoppingList list : lists.getLists().values()) {

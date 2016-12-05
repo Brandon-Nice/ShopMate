@@ -18,6 +18,7 @@ import com.shopmate.api.model.result.GetAllShoppingListsResult;
 import com.shopmate.api.model.result.SendInviteResult;
 import com.shopmate.api.net.model.list.ShoppingListJson;
 import com.shopmate.api.net.model.request.AcceptInviteRequest;
+import com.shopmate.api.net.model.request.AuthenticatedRequest;
 import com.shopmate.api.net.model.request.CancelInviteRequest;
 import com.shopmate.api.net.model.request.CreateItemRequest;
 import com.shopmate.api.net.model.request.CreateListRequest;
@@ -51,6 +52,7 @@ public class NetShopMateService implements ShopMateService {
     private static final String AllListsUrl = "/list/all";
     private static final String GetListUrl = "/list/%s";
     private static final String LeaveListUrl = "/list/%s/leave";
+    private static final String DeleteListUrl = "/list/%s/delete";
 
     private static final String CreateItemUrl = "/item/create";
     private static final String GetItemUrl = "/item/%s";
@@ -92,6 +94,21 @@ public class NetShopMateService implements ShopMateService {
                 throwIfRequestFailed(response);
                 ShoppingListJson result = response.getResult().get();
                 return new CreateShoppingListResult(result.getId(), result.toShoppingList());
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> deleteListAsync(final String fbToken, final long listId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
+                String url = String.format(DeleteListUrl, listId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
             }
         });
     }

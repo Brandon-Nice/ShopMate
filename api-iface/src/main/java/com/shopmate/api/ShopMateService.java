@@ -28,6 +28,15 @@ public interface ShopMateService {
     ListenableFuture<CreateShoppingListResult> createListAsync(String fbToken, String title, ImmutableSet<String> inviteUserIds);
 
     /**
+     * Asynchronously requests to delete a shopping list.
+     * The user must be the list's creator.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param listId The ID of the list to delete.
+     */
+    ListenableFuture<Void> deleteListAsync(String fbToken, long listId);
+
+    /**
      * Asynchronously requests to leave a shopping list.
      *
      * @param fbToken The user's Facebook token.
