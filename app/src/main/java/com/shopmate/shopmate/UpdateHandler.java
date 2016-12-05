@@ -1,7 +1,7 @@
 package com.shopmate.shopmate;
 
 public abstract class UpdateHandler {
-    public void onInvited(String listTitle, long inviteId) {
+    public void onInvited(long inviteId, String listTitle, String senderId) {
     }
 
     public void onListShared(long listId) {

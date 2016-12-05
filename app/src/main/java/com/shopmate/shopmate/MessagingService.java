@@ -13,7 +13,18 @@ public class MessagingService extends FirebaseMessagingService {
 
     public static final String INTENT_FILTER = "com.shopmate.shopmate.MESSAGE_RECEIVED";
 
-    public MessagingService() {
+    private final UpdateListener listener = new UpdateListener(this, new NotificationUpdateHandler(this));
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        listener.register();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        listener.unregister();
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.shopmate.shopmate;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +15,7 @@ public class UpdateListener {
     private static final String KEY_ACTION = "action";
     private static final String KEY_LIST_TITLE = "listTitle";
     private static final String KEY_INVITE_ID = "inviteId";
+    private static final String KEY_SENDER_ID = "senderFbid";
     private static final String KEY_LIST_ID = "listId";
     private static final String KEY_ITEM_ID = "itemId";
     private static final String KEY_USER_ID = "userId";
@@ -27,20 +27,20 @@ public class UpdateListener {
     private static final String ACTION_ITEM_UPDATED = "itemUpdated";
     private static final String ACTION_ITEM_DELETED = "itemDeleted";
 
-    private final Activity activity;
+    private final Context context;
     private final UpdateHandler handler;
 
-    public UpdateListener(Activity activity, UpdateHandler handler) {
-        this.activity = activity;
+    public UpdateListener(Context activity, UpdateHandler handler) {
+        this.context = activity;
         this.handler = handler;
     }
 
     public void register() {
-        activity.registerReceiver(receiver, new IntentFilter(MessagingService.INTENT_FILTER));
+        context.registerReceiver(receiver, new IntentFilter(MessagingService.INTENT_FILTER));
     }
 
     public void unregister() {
-        activity.unregisterReceiver(receiver);
+        context.unregisterReceiver(receiver);
     }
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -56,7 +56,7 @@ public class UpdateListener {
 
     private void handleMessage(Intent intent) {
         String action = intent.getStringExtra(KEY_ACTION);
-        Log.d(TAG, "Received action " + action + " for activity " + activity.getLocalClassName());
+        Log.d(TAG, "Received action " + action + " for " + context.getClass().getName());
         switch (action) {
             case ACTION_INVITED:
                 handleInvited(intent);
@@ -85,7 +85,8 @@ public class UpdateListener {
     private void handleInvited(Intent intent) {
         String listTitle = intent.getStringExtra(KEY_LIST_TITLE);
         long inviteId = Long.parseLong(intent.getStringExtra(KEY_INVITE_ID));
-        handler.onInvited(listTitle, inviteId);
+        String senderId = intent.getStringExtra(KEY_SENDER_ID);
+        handler.onInvited(inviteId, listTitle, senderId);
     }
 
     private void handleListShared(Intent intent) {
