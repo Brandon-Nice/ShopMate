@@ -21,6 +21,7 @@ import com.shopmate.api.net.model.request.AuthenticatedRequest;
 import com.shopmate.api.net.model.request.CreateItemRequest;
 import com.shopmate.api.net.model.request.CreateListRequest;
 import com.shopmate.api.net.model.request.GetAllListsRequest;
+import com.shopmate.api.net.model.request.RegisterFcmTokenRequest;
 import com.shopmate.api.net.model.request.KickUserRequest;
 import com.shopmate.api.net.model.request.SendInviteRequest;
 import com.shopmate.api.net.model.request.UpdateItemRequest;
@@ -60,6 +61,8 @@ public class NetShopMateService implements ShopMateService {
     private static final String AcceptInviteUrl = "/invite/%s/accept";
     private static final String DeclineInviteUrl = "/invite/%s/decline";
     private static final String CancelInviteUrl = "/invite/%s/cancel";
+
+    private static final String RegisterNotifyUrl = "/notify/register";
 
     private static ListeningExecutorService ThreadPool =
             MoreExecutors.listeningDecorator(
@@ -304,6 +307,20 @@ public class NetShopMateService implements ShopMateService {
                 String url = String.format(CancelInviteUrl, inviteId);
                 Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
                 ApiResponse<Void> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> registerFcmTokenAsync(final String fbToken, final String fcmToken) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(fbToken, fcmToken);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(RegisterNotifyUrl, request, responseType);
                 throwIfRequestFailed(response);
                 return null;
             }

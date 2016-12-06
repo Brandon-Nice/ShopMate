@@ -164,4 +164,12 @@ public interface ShopMateService {
      * @param inviteId The ID of the invite to cancel.
      */
     ListenableFuture<Void> cancelInviteAsync(String fbToken, long inviteId);
+
+    /**
+     * Asynchronously registers a Firebase Cloud Messaging (FCM) device token.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param fcmToken The FCM token to register.
+     */
+    ListenableFuture<Void> registerFcmTokenAsync(String fbToken, String fcmToken);
 }

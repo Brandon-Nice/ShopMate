@@ -1,6 +1,7 @@
 package com.shopmate.shopmate;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -88,24 +89,10 @@ public class AddItemActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name.getText().length() != 0) {
-                    Intent res = new Intent();
-                    res.putExtra("item_name", name.getText().toString());
-                    res.putExtra("item_prio", spinner.getSelectedItem().toString());
-                    setResult(RESULT_OK, res);
+                if (name.getText().length() == 0) {
+                    return;
                 }
-
-                //Before the activity finishes, send data to the database via syncItem()
-                try {
-                    syncItem();
-                } catch (ExecutionException e) {
-                    setResult(RESULT_CANCELED);
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    setResult(RESULT_CANCELED);
-                    e.printStackTrace();
-                }
-                finish();
+                syncItem();
             }
         });
         name = (EditText)findViewById(R.id.itemName);
@@ -218,7 +205,7 @@ public class AddItemActivity extends AppCompatActivity {
     }
 
     //Ties all of the information passed from the client to the backend server via ShopMateService API
-    private void syncItem() throws ExecutionException, InterruptedException{
+    private void syncItem() {
 
         //Get the list name & list id values from the ShoppingListActivity
         Intent intent = getIntent();
@@ -255,15 +242,24 @@ public class AddItemActivity extends AppCompatActivity {
         //CreateShoppingListResult createListResult = service.createListAsync(fbToken, listName, ImmutableSet.<String>of()).get();
         //CreateShoppingListItemResult createItemResult = service.createItemAsync(fbToken, createListResult.getId(), testItem).get();
         //ShoppingListItem createdItem = createItemResult.getItem();
+        final ProgressDialog progress = new ProgressDialog(this);
+        progress.setMessage("Adding item...");
+        progress.show();
 
         //Register callbacks to run on the main thread once the API call completes
         Futures.addCallback(future, new FutureCallback<CreateShoppingListItemResult>() {
-            public void onSuccess(CreateShoppingListItemResult result) {
+            public void onSuccess(final CreateShoppingListItemResult result) {
                 //Use runOnUiThread to update UI controls
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(AddItemActivity.this, "Success! Item synced.", Toast.LENGTH_LONG).show();
+                        progress.dismiss();
+                        Intent res = new Intent();
+                        res.putExtra("item_name", name.getText().toString());
+                        res.putExtra("item_prio", spinner.getSelectedItem().toString());
+                        res.putExtra("item_id", Long.toString(result.getId()));
+                        setResult(RESULT_OK, res);
+                        finish();
                     }
                 });
             }
@@ -272,6 +268,7 @@ public class AddItemActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        progress.dismiss();
                         Toast.makeText(AddItemActivity.this, "Unable to sync item.", Toast.LENGTH_LONG).show();
                         t.printStackTrace();
                         Log.e("ErrorStuff",  Log.getStackTraceString(t), t);
