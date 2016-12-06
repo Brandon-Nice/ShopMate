@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity
     static int i = 1;
 
     private UpdateListener updateListener;
+    private ShoppingListAdapter shoppingLists;
 
     private class ShoppingListEntry {
         private final long id;
@@ -165,8 +166,8 @@ public class MainActivity extends AppCompatActivity
         //using arraylists to store data just for the sake of having data
         //TODO: Create a custom Adapter class to take in HashMaps instead to make this more efficient
 
-        final ShoppingListAdapter a = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<ShoppingListEntry>());
-        listview.setAdapter(a);
+        shoppingLists = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<ShoppingListEntry>());
+        listview.setAdapter(shoppingLists);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -193,7 +194,7 @@ public class MainActivity extends AppCompatActivity
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        a.addAll(tmp);
+                        shoppingLists.addAll(tmp);
                     }
                 });
             }
@@ -230,7 +231,9 @@ public class MainActivity extends AppCompatActivity
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                a.insert(tmp, 0);
+                                                if (findShoppingList(tmp.getId()) < 0) {
+                                                    shoppingLists.insert(tmp, 0);
+                                                }
                                             }
                                         });
                                         Snackbar.make(listview, "success", Snackbar.LENGTH_LONG).show();
@@ -260,11 +263,8 @@ public class MainActivity extends AppCompatActivity
         updateListener = new UpdateListener(this, new UpdateHandler() {
             @Override
             public void onListShared(final long listId) {
-                for (int i = 0; i < a.getCount(); i++) {
-                    ShoppingListEntry entry = a.getItem(i);
-                    if (entry.getId() == listId) {
-                        return; // List entry already exists
-                    }
+                if (findShoppingList(listId) >= 0) {
+                    return;
                 }
                 String fbToken = AccessToken.getCurrentAccessToken().getToken();
                 Futures.addCallback(service.getListAndItemsAsync(fbToken, listId), new FutureCallback<ShoppingList>() {
@@ -274,7 +274,9 @@ public class MainActivity extends AppCompatActivity
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                a.insert(entry, 0);
+                                if (findShoppingList(listId) < 0) {
+                                    shoppingLists.insert(entry, 0);
+                                }
                             }
                         });
                     }
@@ -288,12 +290,9 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onListDeleted(long listId) {
-                for (int i = 0; i < a.getCount(); i++) {
-                    ShoppingListEntry entry = a.getItem(i);
-                    if (entry.getId() == listId) {
-                        a.remove(entry);
-                        break;
-                    }
+                int index = findShoppingList(listId);
+                if (index >= 0) {
+                    shoppingLists.remove(shoppingLists.getItem(index));
                 }
             }
 
@@ -406,5 +405,15 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private int findShoppingList(long id) {
+        for (int i = 0; i < shoppingLists.getCount(); i++) {
+            ShoppingListEntry entry = shoppingLists.getItem(i);
+            if (entry.getId() == id) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

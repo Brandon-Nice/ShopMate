@@ -44,6 +44,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     private ShoppingListItemAdapter sla;
     private Comparator<ShoppingListItemHandle> comparator = new PrioComparator();
     private UpdateListener updateListener;
+    private long listId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         Bundle extras = getIntent().getExtras();
         final String title = extras.getString("title");
-        final long listId = Long.parseLong(extras.getString("listId"));
+        listId = Long.parseLong(extras.getString("listId"));
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
@@ -115,6 +116,9 @@ public class ShoppingListActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                if (findItem(itemId) >= 0) {
+                                    return;
+                                }
                                 sla.add(new ShoppingListItemHandle(itemId, Optional.of(result)));
                                 sla.sort(comparator);
                             }
@@ -235,6 +239,9 @@ public class ShoppingListActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        if (findItem(id) >= 0) {
+                            return;
+                        }
                         sla.add(new ShoppingListItemHandle(id, Optional.of(bld.build())));
                         sla.sort(comparator);
                     }
@@ -290,7 +297,9 @@ public class ShoppingListActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.share_button){
             //Open up an activity to select the friend who you want to share a list with
-            startActivity(new Intent(ShoppingListActivity.this, SharingListsActivity.class));
+            Intent intent = new Intent(ShoppingListActivity.this, SharingListsActivity.class);
+            intent.putExtra("listId", listId);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

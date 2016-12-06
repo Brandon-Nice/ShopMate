@@ -3,32 +3,30 @@ package com.shopmate.shopmate;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.facebook.login.widget.LoginButton;
-import com.shopmate.api.model.item.ShoppingListItem;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.shopmate.api.ShopMateService;
+import com.shopmate.api.ShopMateServiceProvider;
+import com.shopmate.api.model.result.SendInviteResult;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -37,14 +35,16 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
-import static android.widget.AdapterView.*;
+import static android.widget.AdapterView.OnItemClickListener;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class SharingListsActivity extends AppCompatActivity {
 
-    ArrayList<HashMap<String, String>> friends = new ArrayList(); //stores friends that are in your friend list
+    private static String TAG = "SharingListsActivity";
+
+    private ArrayList<HashMap<String, String>> friends = new ArrayList(); //stores friends that are in your friend list
+    private long listId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +53,9 @@ public class SharingListsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Add A Friend To A List");
         setSupportActionBar(toolbar);
+
+        Bundle extras = getIntent().getExtras();
+        listId = extras.getLong("listId");
 
         final ListView tempFriendsList = (ListView) findViewById(R.id.friends);   /* Sets names of friends to view */
         final FriendsAdapter friendAdapter = new FriendsAdapter(getApplicationContext(), friends);
@@ -101,7 +104,7 @@ public class SharingListsActivity extends AppCompatActivity {
                             //no sorting for now
                             //sortFriends(friends);
 
-                            //friendAdapter.notifyDataSetChanged();
+                            friendAdapter.notifyDataSetChanged();
                             tempFriendsList.setAdapter(friendAdapter);
 
                             //Added functionality to open a new activity for each friend clicked
@@ -112,13 +115,7 @@ public class SharingListsActivity extends AppCompatActivity {
                                     String friendID = friend.get("id");
                                     String first = friend.get("firstName");
                                     String last = friend.get("lastName");
-                                    String picUrl = friend.get("picUrl");
-                                    String toastMsg = "Success! You've shared your list with " + first + " " + last + ".";
-
-                                    //TODO: Make a backend call to add the friend to the list, then exit the activity
-                                    Toast.makeText(getApplicationContext(), toastMsg, Toast.LENGTH_LONG).show();
-                                    finish();
-
+                                    inviteFriend(friendID, first, last);
                                 }
 
                             });
@@ -146,31 +143,45 @@ public class SharingListsActivity extends AppCompatActivity {
 
     }
 
+    private void inviteFriend(String userId, final String firstName, final String lastName) {
+        String fbToken = AccessToken.getCurrentAccessToken().getToken();
+        ShopMateService service = ShopMateServiceProvider.get();
+        Log.d(TAG, "Sending invite for list " + listId + " to " + userId);
+        Futures.addCallback(service.sendInviteAsync(fbToken, listId, userId), new FutureCallback<SendInviteResult>() {
+            @Override
+            public void onSuccess(SendInviteResult result) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String toastMsg = "Invite sent to " + firstName + " " + lastName + "!";
+                        Toast.makeText(getApplicationContext(), toastMsg, Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.e(TAG, "Failed to send invite", t);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Failed to send invite!", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+    }
 }
 
-class FriendsAdapter extends BaseAdapter implements ListAdapter {
+class FriendsAdapter extends ArrayAdapter<HashMap<String, String>> {
     private ArrayList<HashMap<String, String>> friends;
     private Context context;
 
-    FriendsAdapter(Context context, ArrayList<HashMap<String, String>> friends) {
-        //super(context, resourceId, friends);
+    public FriendsAdapter(Context context, ArrayList<HashMap<String, String>> friends) {
+        super(context, R.layout.friends_list_item, friends);
         this.friends = friends;
         this.context = context;
-    }
-
-    @Override
-    public int getCount() {
-        return friends.size();
-    }
-
-    @Override
-    public Object getItem(int i) {
-        return friends.get(i);
-    }
-
-    @Override
-    public long getItemId(int i) {
-        return Long.parseLong(friends.get(i).get("id"));
     }
 
     @NonNull
