@@ -9,7 +9,7 @@ public class ShoppingListItemUpdate {
     private final Optional<Optional<String>> imageUrl;
     private final Optional<Optional<Integer>> maxPriceCents;
     private final Optional<Integer> quantity;
-    private final Optional<Integer> quantityPurchased;
+    private final int quantityPurchasedDelta;
     private final Optional<ShoppingListItemPriority> priority;
 
     public ShoppingListItemUpdate(
@@ -18,37 +18,26 @@ public class ShoppingListItemUpdate {
             Optional<Optional<String>> imageUrl,
             Optional<Optional<Integer>> maxPriceCents,
             Optional<Integer> quantity,
-            Optional<Integer> quantityPurchased,
+            int quantityPurchasedDelta,
             Optional<ShoppingListItemPriority> priority) {
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
         this.maxPriceCents = maxPriceCents;
         this.quantity = quantity;
-        this.quantityPurchased = quantityPurchased;
+        this.quantityPurchasedDelta = quantityPurchasedDelta;
         this.priority = priority;
     }
 
-    public static ShoppingListItemUpdate fromDifference(ShoppingListItem originalItem, ShoppingListItem newItem) {
+    public static ShoppingListItemUpdate fromDifference(ShoppingListItem oldItem, ShoppingListItem newItem) {
         return new ShoppingListItemUpdate(
-                updateIfNotEqual(originalItem.getName(), newItem.getName()),
-                updateIfNotEqual(originalItem.getDescription(), newItem.getDescription()),
-                updateIfNotEqual(originalItem.getImageUrl(), newItem.getImageUrl()),
-                updateIfNotEqual(originalItem.getMaxPriceCents(), newItem.getMaxPriceCents()),
-                updateIfNotEqual(originalItem.getQuantity(), newItem.getQuantity()),
-                updateIfNotEqual(originalItem.getQuantityPurchased(), newItem.getQuantityPurchased()),
-                updateIfNotEqual(originalItem.getPriority(), newItem.getPriority()));
-    }
-
-    public ShoppingListItem applyTo(ShoppingListItem baseItem) {
-        return new ShoppingListItem(
-                name.or(baseItem.getName()),
-                description.or(baseItem.getDescription()),
-                imageUrl.or(baseItem.getImageUrl()),
-                maxPriceCents.or(baseItem.getMaxPriceCents()),
-                quantity.or(baseItem.getQuantity()),
-                quantityPurchased.or(baseItem.getQuantityPurchased()),
-                priority.or(baseItem.getPriority()));
+                updateIfNotEqual(oldItem.getName(), newItem.getName()),
+                updateIfNotEqual(oldItem.getDescription(), newItem.getDescription()),
+                updateIfNotEqual(oldItem.getImageUrl(), newItem.getImageUrl()),
+                updateIfNotEqual(oldItem.getMaxPriceCents(), newItem.getMaxPriceCents()),
+                updateIfNotEqual(oldItem.getQuantity(), newItem.getQuantity()),
+                newItem.getQuantityPurchased() - oldItem.getQuantityPurchased(),
+                updateIfNotEqual(oldItem.getPriority(), newItem.getPriority()));
     }
 
     public Optional<String> getNameUpdate() {
@@ -71,7 +60,7 @@ public class ShoppingListItemUpdate {
         return quantity;
     }
 
-    public Optional<Integer> getQuantityPurchased() { return quantityPurchased; }
+    public int getQuantityPurchasedDelta() { return quantityPurchasedDelta; }
 
     public Optional<ShoppingListItemPriority> getPriorityUpdate() {
         return priority;

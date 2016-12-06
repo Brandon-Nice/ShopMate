@@ -3,6 +3,7 @@ package com.shopmate.api;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.shopmate.api.model.item.ShoppingListItem;
+import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.api.model.result.CreateShoppingListResult;
@@ -27,12 +28,31 @@ public interface ShopMateService {
     ListenableFuture<CreateShoppingListResult> createListAsync(String fbToken, String title, ImmutableSet<String> inviteUserIds);
 
     /**
+     * Asynchronously requests to delete a shopping list.
+     * The user must be the list's creator.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param listId The ID of the list to delete.
+     */
+    ListenableFuture<Void> deleteListAsync(String fbToken, long listId);
+
+    /**
      * Asynchronously requests to leave a shopping list.
      *
      * @param fbToken The user's Facebook token.
      * @param listId The ID of the list to leave.
      */
     ListenableFuture<Void> leaveListAsync(String fbToken, long listId);
+
+    /**
+     * Asynchronously requests to remove a user from a shopping list.
+     * The requesting user must be the list's creator.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param listId The ID of the list to remove a user from.
+     * @param removeUserId The FBID of the user to remove from the list.
+     */
+    ListenableFuture<Void> removeUserFromListAsync(String fbToken, long listId, String removeUserId);
 
     /**
      * Asynchronously gets information about a single shopping list and the items in it.
@@ -72,6 +92,26 @@ public interface ShopMateService {
      * @return The actual item that was created.
      */
     ListenableFuture<CreateShoppingListItemResult> createItemAsync(String fbToken, long listId, ShoppingListItem item);
+
+    /**
+     * Asynchronously updates an item.
+     * The user must have access to the item's list or else this will fail with a BAD_REQUEST error.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param itemId The ID of the item to update.
+     * @param update The changes to make to the item. Use ShoppingListItemUpdate.fromDifference() to build this easily.
+     * @return The updated item.
+     */
+    ListenableFuture<ShoppingListItem> updateItemAsync(String fbToken, long itemId, ShoppingListItemUpdate update);
+
+    /**
+     * Asynchronously deletes an item.
+     * The user must have access to the item's list or else this will fail with a BAD_REQUEST error.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param itemId The ID of the item to delete.
+     */
+    ListenableFuture<Void> deleteItemAsync(String fbToken, long itemId);
 
     /**
      * Asynchronously gets information about an item.
@@ -124,4 +164,12 @@ public interface ShopMateService {
      * @param inviteId The ID of the invite to cancel.
      */
     ListenableFuture<Void> cancelInviteAsync(String fbToken, long inviteId);
+
+    /**
+     * Asynchronously registers a Firebase Cloud Messaging (FCM) device token.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param fcmToken The FCM token to register.
+     */
+    ListenableFuture<Void> registerFcmTokenAsync(String fbToken, String fcmToken);
 }
