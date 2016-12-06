@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.common.base.Optional;
 import com.shopmate.api.ShopMateService;
@@ -30,6 +31,7 @@ import com.shopmate.api.model.item.ShoppingListItemHandle;
 import com.shopmate.api.model.item.ShoppingListItemPriority;
 import com.shopmate.api.model.list.ShoppingList;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -219,9 +221,16 @@ public class ShoppingListActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == ADD_ITEM_REQUEST) {
                 final Intent d = data;
+                double price = Double.parseDouble(d.getStringExtra("item_price"));
+                price *= 100;
                 final ShoppingListItemBuilder bld = new ShoppingListItemBuilder(null)
                         .name(d.getStringExtra("item_name"))
-                        .priority(convertPriority(d.getStringExtra("item_prio")));
+                        .priority(convertPriority(d.getStringExtra("item_prio")))
+                        .imageUrl(d.getStringExtra("item_img"))
+                        .priority(convertPriority(d.getStringExtra("item_prio")))
+                        .quantity(Integer.parseInt(d.getStringExtra("item_quan")))
+                        .maxPriceCents(((int) price));
+
                 final long id = Long.parseLong(d.getStringExtra("item_id"));
                 runOnUiThread(new Runnable() {
                     @Override
@@ -314,12 +323,35 @@ public class ShoppingListActivity extends AppCompatActivity {
             CheckBox checkBox = (CheckBox) view.findViewById(R.id.itemCheckBox);
             checkBox.setText(itemName);
 
+            //Puts the image in for each item
             ImageView imageView = (ImageView) view.findViewById(R.id.itemImageView);
-            Picasso.with(getContext())
-                    .load("http://doseoffunny.com/wp-content/uploads/2014/04/tumblr_mtanx0poHz1qdlh1io1_400.gif")
-                    .resize(150,150)
-                    .into(imageView);
+            String imageURL = "http://1030news.com/wp-content/themes/fearless/images/missing-image-640x360.png";
+            if(items.get(position).getItem().get().getImageUrl().isPresent() && items.get(position).getItem().get().getImageUrl().get() != "") {
+                imageURL = items.get(position).getItem().get().getImageUrl().get();
+            }
+            if(imageURL.contains("http")) {
+                //web location
+                Picasso.with(getContext())
+                        .load(imageURL)
+                        .resize(150, 150)
+                        .into(imageView);
+            }
+            else {
+                //phone location
+                Picasso.with(getContext())
+                        .load(new File(imageURL))
+                        .resize(150, 150)
+                        .into(imageView);
+            }
 
+            //Puts the quantity in for each item
+            TextView listItemQuantity = (TextView) view.findViewById(R.id.listItemQuantity);
+            listItemQuantity.setText("Quantity: " + Integer.toString(items.get(position).getItem().get().getQuantity()));
+
+            //Puts the price in for each item
+            TextView listItemPrice = (TextView) view.findViewById(R.id.listItemPrice);
+            double price = ((double) items.get(position).getItem().get().getMaxPriceCents().get() / 100);
+            listItemPrice.setText("Price: $" + Double.toString(price));
             return view;
         }
     }

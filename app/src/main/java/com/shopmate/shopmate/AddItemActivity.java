@@ -245,11 +245,18 @@ public class AddItemActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
+                        EditText itemPrice = (EditText)findViewById(R.id.itemPrice);
+                        EditText itemQuantity = (EditText)findViewById(R.id.itemQty);
+
                         progress.dismiss();
                         Intent res = new Intent();
                         res.putExtra("item_name", name.getText().toString());
                         res.putExtra("item_prio", spinner.getSelectedItem().toString());
                         res.putExtra("item_id", Long.toString(result.getId()));
+                        res.putExtra("item_price", itemPrice.getText().toString());
+                        res.putExtra("item_quan", itemQuantity.getText().toString());
+                        res.putExtra("item_img", selectedImageUri.toString());
                         setResult(RESULT_OK, res);
                         finish();
                     }
