@@ -114,6 +114,9 @@ public class ShoppingListActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                if (findItem(itemId) >= 0) {
+                                    return;
+                                }
                                 sla.add(new ShoppingListItemHandle(itemId, Optional.of(result)));
                                 sla.sort(comparator);
                             }
@@ -227,6 +230,9 @@ public class ShoppingListActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        if (findItem(id) >= 0) {
+                            return;
+                        }
                         sla.add(new ShoppingListItemHandle(id, Optional.of(bld.build())));
                         sla.sort(comparator);
                     }
