@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -136,6 +137,7 @@ public class AddItemActivity extends AppCompatActivity {
 
                     ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
                     Picasso.with(this).load(walmartItemURL).into(image);
+                    selectedImageUri = Uri.parse(walmartItemURL);
             }
         }
     }
@@ -220,7 +222,7 @@ public class AddItemActivity extends AppCompatActivity {
         //Create a shopping list item to be used in the next API call
         ShoppingListItem testItem = new ShoppingListItemBuilder(name.getText().toString())
                 .description(itemDescription.getText().toString().trim())
-                .imageUrl(selectedImageUri == null ? "" : selectedImageUri.toString())
+                .imageUrl(selectedImageUri == null ? Optional.<String>absent() : Optional.of(selectedImageUri.toString()))
                 .maxPriceCents( Math.round(Float.parseFloat(itemPrice.getText().toString()) * 100) )
                 .quantity(Integer.parseInt(itemQuantity.getText().toString()))
                 .quantityPurchased(0) //TODO: Maybe change this val?
@@ -256,7 +258,9 @@ public class AddItemActivity extends AppCompatActivity {
                         res.putExtra("item_id", Long.toString(result.getId()));
                         res.putExtra("item_price", itemPrice.getText().toString());
                         res.putExtra("item_quan", itemQuantity.getText().toString());
-                        res.putExtra("item_img", selectedImageUri.toString());
+                        if(selectedImageUri != null) {
+                            res.putExtra("item_img", selectedImageUri.toString());
+                        }
                         setResult(RESULT_OK, res);
                         finish();
                     }
