@@ -1,68 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/request_page"
     android:weightSum="1">
 
-    <TextView
-        android:text="My Items Bought"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/reqTitle"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:fontFamily="sans-serif"
-        android:textSize="24sp"
-        android:textAlignment="center" />
+    <!--<TextView-->
+        <!--android:text="My Items Bought"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/reqTitle"-->
+        <!--android:textAppearance="@style/TextAppearance.AppCompat.Caption"-->
+        <!--android:fontFamily="sans-serif"-->
+        <!--android:textSize="24sp"-->
+        <!--android:textAlignment="center" />-->
 
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="450dp"
-        android:id="@+id/fragment_layout"
-        android:clickable="true"
-        android:layout_weight="0.15">
+    <!--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--xmlns:tools="http://schemas.android.com/tools"-->
+        <!--android:orientation="vertical"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="450dp"-->
+        <!--android:id="@+id/fragment_layout"-->
+        <!--android:clickable="true"-->
+        <!--android:layout_weight="0.15">-->
 
-        <fragment class="com.shopmate.shopmate.ItemsBoughtFragment"
-            android:id="@+id/items_bought_fragment"
+        <!--<fragment class="com.shopmate.shopmate.ItemsBoughtFragment"-->
+            <!--android:id="@+id/items_bought_fragment"-->
+            <!--android:layout_width="match_parent"-->
+            <!--tools:layout="@layout/fragment_itemsbought_list"-->
+            <!--android:layout_height="450dp" />-->
+    <!--</FrameLayout>-->
+
+    <!--<RadioGroup android:id="@+id/radioGroup1"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:layout_gravity="center">-->
+        <!--<RadioButton android:layout_height="wrap_content"-->
+            <!--android:id="@+id/radio0" android:layout_width="wrap_content"-->
+            <!--android:text="" android:checked="true"></RadioButton>-->
+        <!--<RadioButton android:layout_height="wrap_content"-->
+            <!--android:id="@+id/radio1" android:layout_width="wrap_content"-->
+            <!--android:text=""></RadioButton>-->
+        <!--<RadioButton android:layout_height="wrap_content"-->
+            <!--android:id="@+id/radio2" android:layout_width="wrap_content"-->
+            <!--android:text=""></RadioButton>-->
+    <!--</RadioGroup>-->
+
+    <!--<ViewFlipper android:id="@+id/ViewFlipper01"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content">-->
+        <!--&lt;!&ndash;adding views to ViewFlipper&ndash;&gt;-->
+        <!--&lt;!&ndash;<TextView android:id="@+id/TextView01"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:text="First view is now displayed"></TextView>&ndash;&gt;-->
+        <!--&lt;!&ndash;<TextView android:id="@+id/TextView02"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:text="Second view is now displayed"></TextView>&ndash;&gt;-->
+        <!--&lt;!&ndash;<TextView android:id="@+id/TextView03"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:text="Third view is now displayed"></TextView>&ndash;&gt;-->
+    <!--</ViewFlipper>-->
+
+    <TabHost
+        android:id="@+id/tabHost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            tools:layout="@layout/fragment_itemsbought_list"
-            android:layout_height="450dp" />
-    </FrameLayout>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    <RadioGroup android:id="@+id/radioGroup1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="center">
-        <RadioButton android:layout_height="wrap_content"
-            android:id="@+id/radio0" android:layout_width="wrap_content"
-            android:text="" android:checked="true"></RadioButton>
-        <RadioButton android:layout_height="wrap_content"
-            android:id="@+id/radio1" android:layout_width="wrap_content"
-            android:text=""></RadioButton>
-        <RadioButton android:layout_height="wrap_content"
-            android:id="@+id/radio2" android:layout_width="wrap_content"
-            android:text=""></RadioButton>
-    </RadioGroup>
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"></TabWidget>
 
-    <ViewFlipper android:id="@+id/ViewFlipper01"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <!--adding views to ViewFlipper-->
-        <!--<TextView android:id="@+id/TextView01"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="First view is now displayed"></TextView>-->
-        <!--<TextView android:id="@+id/TextView02"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="Second view is now displayed"></TextView>-->
-        <!--<TextView android:id="@+id/TextView03"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="Third view is now displayed"></TextView>-->
-    </ViewFlipper>
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/tab1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="This is tab 1" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tab2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="This is tab 2" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
 </LinearLayout>
