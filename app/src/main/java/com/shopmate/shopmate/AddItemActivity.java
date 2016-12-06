@@ -54,6 +54,8 @@ import java.util.concurrent.ExecutionException;
 public class AddItemActivity extends AppCompatActivity {
 
     public static EditText name;
+    public static EditText quantity;
+    public static EditText price;
     static final int WALMART_SEARCH = 2;
     private static final int SELECT_PICTURE = 1;
     private static final int WRITE_PERMISSION = 0x01;
@@ -83,12 +85,24 @@ public class AddItemActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (name.getText().length() == 0) {
+                    name.setError("No item specified");
+                    return;
+                }
+                if (quantity.getText().length() == 0 ||
+                        Integer.parseInt(quantity.getText().toString()) == 0) {
+                    quantity.setError("No valid quantity specified");
+                    return;
+                }
+                if (price.getText().length() == 0) {
+                    price.setError("No valid price specified");
                     return;
                 }
                 syncItem();
             }
         });
         name = (EditText)findViewById(R.id.itemName);
+        quantity = (EditText)findViewById(R.id.itemQty);
+        price = (EditText)findViewById(R.id.itemPrice);
 
         // For a user adding a picture while adding an item
         ((ImageButton)findViewById(R.id.itemPhoto)).setOnClickListener(new View.OnClickListener() {
@@ -125,10 +139,8 @@ public class AddItemActivity extends AppCompatActivity {
                     String walmartItemDesc = data.getStringExtra("itemDesc");
                     String walmartItemURL = data.getStringExtra("itemImage");
 
-                    TextView name = (TextView) findViewById(R.id.itemName);
                     name.setText(walmartItemName);
 
-                    TextView price = (TextView) findViewById(R.id.itemPrice);
                     double walmartItemDouble = ((double)walmartItemPrice)/100;
                     price.setText(Double.toString(walmartItemDouble));
 
@@ -138,6 +150,8 @@ public class AddItemActivity extends AppCompatActivity {
                     ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
                     Picasso.with(this).load(walmartItemURL).into(image);
                     selectedImageUri = Uri.parse(walmartItemURL);
+
+                quantity.setText("1");
             }
         }
     }
@@ -260,6 +274,7 @@ public class AddItemActivity extends AppCompatActivity {
                         res.putExtra("item_quan", itemQuantity.getText().toString());
                         if(selectedImageUri != null) {
                             res.putExtra("item_img", selectedImageUri.toString());
+                            selectedImageUri = null;
                         }
                         setResult(RESULT_OK, res);
                         finish();
