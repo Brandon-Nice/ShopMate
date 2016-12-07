@@ -217,5 +217,11 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             return view;
         }
+
+        @Override
+        public void clear() {
+            super.clear();
+            items.clear();
+        }
     }
 }

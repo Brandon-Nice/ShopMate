@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity
     static CallbackManager callbackManager;
     static int i = 1;
 
+    private ShoppingListAdapter a;
+
     private class ShoppingListAdapter extends ArrayAdapter<Map.Entry<Long, ShoppingList>> {
         private List<Map.Entry<Long, ShoppingList>> items;
         private Context context;
@@ -144,7 +146,7 @@ public class MainActivity extends AppCompatActivity
         //TODO: Create a custom Adapter class to take in HashMaps instead to make this more efficient
 
         //final ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, new ArrayList<String>());
-        final ShoppingListAdapter a = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<Map.Entry<Long, ShoppingList>>());
+        a = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<Map.Entry<Long, ShoppingList>>());
         listview.setAdapter(a);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -165,28 +167,7 @@ public class MainActivity extends AppCompatActivity
         });
         
 
-        String fbToken = AccessToken.getCurrentAccessToken().getToken();
-        Futures.addCallback(ShopMateServiceProvider.get().getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
-            @Override
-            public void onSuccess(GetAllShoppingListsResult result) {
-                final ArrayList<Map.Entry<Long, ShoppingList>> tmp = new ArrayList<Map.Entry<Long, ShoppingList>>();
-                for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
-                    tmp.add(i);
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        a.addAll(tmp);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
-            }
-        });
+        UpdateShoppingLists();
 
         ((Button)findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -263,6 +244,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        UpdateShoppingLists();
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -325,6 +312,34 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void UpdateShoppingLists() {
+        final ListView listview = (ListView) findViewById(R.id.userlistView);
+
+        String fbToken = AccessToken.getCurrentAccessToken().getToken();
+        Futures.addCallback(ShopMateServiceProvider.get().getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
+            @Override
+            public void onSuccess(GetAllShoppingListsResult result) {
+                final ArrayList<Map.Entry<Long, ShoppingList>> tmp = new ArrayList<Map.Entry<Long, ShoppingList>>();
+                for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
+                    tmp.add(i);
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        a.clear();
+                        a.addAll(tmp);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
 }
