@@ -1,10 +1,12 @@
 package com.shopmate.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
+import com.shopmate.api.model.purchase.ShoppingItemPurchase;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.api.model.result.CreateShoppingListResult;
 import com.shopmate.api.model.result.GetAllInvitesResult;
@@ -172,4 +174,42 @@ public interface ShopMateService {
      * @param fcmToken The FCM token to register.
      */
     ListenableFuture<Void> registerFcmTokenAsync(String fbToken, String fcmToken);
+
+    /**
+     * Asynchronously logs a purchase.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param itemId The ID of the item that was purchased.
+     * @param receiverUserId The FBID of the user to request reimbursement from.
+     * @param totalPriceCents The total cost of the purchase in cents.
+     * @param quantity The number of items purchased.
+     * @return The purchase that was made.
+     */
+    ListenableFuture<ShoppingItemPurchase> makePurchaseAsync(
+            String fbToken, long itemId, String receiverUserId, int totalPriceCents, int quantity);
+
+    /**
+     * Asynchronously gets information about a purchase.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param purchaseId The ID of the purchase to get.
+     * @return The purchase.
+     */
+    ListenableFuture<ShoppingItemPurchase> getPurchaseAsync(String fbToken, long purchaseId);
+
+    /**
+     * Asynchronously gets all purchases which involve a user.
+     *
+     * @param fbToken The user's Facebook token.
+     * @return The list of purchases.
+     */
+    ListenableFuture<ImmutableList<ShoppingItemPurchase>> getAllPurchasesAsync(String fbToken);
+
+    /**
+     * Asynchronously marks a purchase as reimbursed.
+     *
+     * @param fbToken The user's Facebook token.
+     * @param purchaseId The ID of the purchase to complete.
+     */
+    ListenableFuture<Void> completePurchaseAsync(String fbToken, long purchaseId);
 }

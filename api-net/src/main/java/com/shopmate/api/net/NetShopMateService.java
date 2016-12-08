@@ -1,5 +1,6 @@
 package com.shopmate.api.net;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -11,6 +12,7 @@ import com.shopmate.api.ShopMateService;
 import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
+import com.shopmate.api.model.purchase.ShoppingItemPurchase;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.api.model.result.CreateShoppingListResult;
 import com.shopmate.api.model.result.GetAllInvitesResult;
@@ -21,8 +23,9 @@ import com.shopmate.api.net.model.request.AuthenticatedRequest;
 import com.shopmate.api.net.model.request.CreateItemRequest;
 import com.shopmate.api.net.model.request.CreateListRequest;
 import com.shopmate.api.net.model.request.GetAllListsRequest;
-import com.shopmate.api.net.model.request.RegisterFcmTokenRequest;
 import com.shopmate.api.net.model.request.KickUserRequest;
+import com.shopmate.api.net.model.request.MakePurchaseRequest;
+import com.shopmate.api.net.model.request.RegisterFcmTokenRequest;
 import com.shopmate.api.net.model.request.SendInviteRequest;
 import com.shopmate.api.net.model.request.UpdateItemRequest;
 import com.shopmate.api.net.model.response.ApiResponse;
@@ -30,8 +33,10 @@ import com.shopmate.api.net.model.response.CreateItemResponse;
 import com.shopmate.api.net.model.response.ErrorCodes;
 import com.shopmate.api.net.model.response.GetAllInvitesResponse;
 import com.shopmate.api.net.model.response.GetAllListsResponse;
+import com.shopmate.api.net.model.response.GetAllPurchasesResponse;
 import com.shopmate.api.net.model.response.GetItemResponse;
 import com.shopmate.api.net.model.response.GetListResponse;
+import com.shopmate.api.net.model.response.PurchaseResponse;
 import com.shopmate.api.net.model.response.SendInviteResponse;
 
 import java.io.IOException;
@@ -63,6 +68,11 @@ public class NetShopMateService implements ShopMateService {
     private static final String CancelInviteUrl = "/invite/%s/cancel";
 
     private static final String RegisterNotifyUrl = "/notify/register";
+
+    private static final String MakePurchaseUrl = "/purchase/request";
+    private static final String AllPurchasesUrl = "/purchase/all";
+    private static final String GetPurchaseUrl = "/purchase/%s";
+    private static final String CompletePurchaseUrl = "/purchase/%s/complete";
 
     private static ListeningExecutorService ThreadPool =
             MoreExecutors.listeningDecorator(
@@ -321,6 +331,64 @@ public class NetShopMateService implements ShopMateService {
                 RegisterFcmTokenRequest request = new RegisterFcmTokenRequest(fbToken, fcmToken);
                 Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
                 ApiResponse<Void> response = post(RegisterNotifyUrl, request, responseType);
+                throwIfRequestFailed(response);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<ShoppingItemPurchase> makePurchaseAsync(final String fbToken, final long itemId, final String receiverUserId, final int totalPriceCents, final int quantity) {
+        return ThreadPool.submit(new Callable<ShoppingItemPurchase>() {
+            @Override
+            public ShoppingItemPurchase call() throws Exception {
+                MakePurchaseRequest request = new MakePurchaseRequest(fbToken, itemId, receiverUserId, totalPriceCents, quantity);
+                Type responseType = new TypeToken<ApiResponse<PurchaseResponse>>(){}.getType();
+                ApiResponse<PurchaseResponse> response = post(MakePurchaseUrl, request, responseType);
+                throwIfRequestFailed(response);
+                return response.getResult().get().toPurchase();
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<ShoppingItemPurchase> getPurchaseAsync(final String fbToken, final long purchaseId) {
+        return ThreadPool.submit(new Callable<ShoppingItemPurchase>() {
+            @Override
+            public ShoppingItemPurchase call() throws Exception {
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
+                String url = String.format(GetPurchaseUrl, purchaseId);
+                Type responseType = new TypeToken<ApiResponse<PurchaseResponse>>(){}.getType();
+                ApiResponse<PurchaseResponse> response = post(url, request, responseType);
+                throwIfRequestFailed(response);
+                return response.getResult().get().toPurchase();
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<ImmutableList<ShoppingItemPurchase>> getAllPurchasesAsync(final String fbToken) {
+        return ThreadPool.submit(new Callable<ImmutableList<ShoppingItemPurchase>>() {
+            @Override
+            public ImmutableList<ShoppingItemPurchase> call() throws Exception {
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
+                Type responseType = new TypeToken<ApiResponse<GetAllPurchasesResponse>>(){}.getType();
+                ApiResponse<GetAllPurchasesResponse> response = post(AllPurchasesUrl, request, responseType);
+                throwIfRequestFailed(response);
+                return response.getResult().get().toPurchaseList();
+            }
+        });
+    }
+
+    @Override
+    public ListenableFuture<Void> completePurchaseAsync(final String fbToken, final long purchaseId) {
+        return ThreadPool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                AuthenticatedRequest request = new AuthenticatedRequest(fbToken);
+                String url = String.format(CompletePurchaseUrl, purchaseId);
+                Type responseType = new TypeToken<ApiResponse<Void>>(){}.getType();
+                ApiResponse<Void> response = post(url, request, responseType);
                 throwIfRequestFailed(response);
                 return null;
             }
