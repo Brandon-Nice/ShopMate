@@ -21,4 +21,10 @@ public abstract class UpdateHandler {
 
     public void onItemDeleted(long itemId) {
     }
+
+    public void onReimbursementRequested(long purchaseId) {
+    }
+
+    public void onPurchaseCompleted(long purchaseId) {
+    }
 }

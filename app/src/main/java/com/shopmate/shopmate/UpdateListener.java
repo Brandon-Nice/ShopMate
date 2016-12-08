@@ -19,6 +19,7 @@ public class UpdateListener {
     private static final String KEY_LIST_ID = "listId";
     private static final String KEY_ITEM_ID = "itemId";
     private static final String KEY_USER_ID = "userId";
+    private static final String KEY_PURCHASE_ID = "purchaseId";
 
     private static final String ACTION_INVITED = "invited";
     private static final String ACTION_LIST_SHARED = "listShared";
@@ -26,6 +27,8 @@ public class UpdateListener {
     private static final String ACTION_ITEM_ADDED = "itemAdded";
     private static final String ACTION_ITEM_UPDATED = "itemUpdated";
     private static final String ACTION_ITEM_DELETED = "itemDeleted";
+    private static final String ACTION_REIMBURSEMENT_REQUESTED = "reimbursementRequested";
+    private static final String ACTION_PURCHASE_COMPLETED = "purchaseCompleted";
 
     private final Context context;
     private final UpdateHandler handler;
@@ -76,6 +79,12 @@ public class UpdateListener {
             case ACTION_ITEM_DELETED:
                 handleItemDeleted(intent);
                 break;
+            case ACTION_REIMBURSEMENT_REQUESTED:
+                handleReimbursementRequested(intent);
+                break;
+            case ACTION_PURCHASE_COMPLETED:
+                handlePurchaseCompleted(intent);
+                break;
             default:
                 Log.w(TAG, "Unsupported action " + action);
                 break;
@@ -114,5 +123,15 @@ public class UpdateListener {
     private void handleItemDeleted(Intent intent) {
         long itemId = Long.parseLong(intent.getStringExtra(KEY_ITEM_ID));
         handler.onItemDeleted(itemId);
+    }
+
+    private void handleReimbursementRequested(Intent intent) {
+        long purchaseId = Long.parseLong(intent.getStringExtra(KEY_PURCHASE_ID));
+        handler.onReimbursementRequested(purchaseId);
+    }
+
+    private void handlePurchaseCompleted(Intent intent) {
+        long purchaseId = Long.parseLong(intent.getStringExtra(KEY_PURCHASE_ID));
+        handler.onPurchaseCompleted(purchaseId);
     }
 }
