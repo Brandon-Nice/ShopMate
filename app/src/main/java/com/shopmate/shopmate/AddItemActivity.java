@@ -82,10 +82,23 @@ public class AddItemActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+
+                EditText itemPrice = (EditText)findViewById(R.id.itemPrice);
+                EditText itemQuantity = (EditText)findViewById(R.id.itemQty);
+
                 if (name.getText().length() == 0) {
-                    return;
+                    name.setError("Item Name is required!");
                 }
-                syncItem();
+                else if(itemPrice.getText().toString().trim().equals("")) {
+                    itemPrice.setError("Item Price is required!");
+                }
+                else if(itemQuantity.getText().toString().trim().equals("")) {
+                    itemQuantity.setError("Item Quantity is required!");
+                }
+                else {
+                    syncItem();
+                }
             }
         });
         name = (EditText)findViewById(R.id.itemName);
