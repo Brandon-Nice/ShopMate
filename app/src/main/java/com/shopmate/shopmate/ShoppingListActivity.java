@@ -8,12 +8,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,8 +35,11 @@ import com.shopmate.api.model.list.ShoppingList;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 public class ShoppingListActivity extends AppCompatActivity {
@@ -309,31 +314,77 @@ public class ShoppingListActivity extends AppCompatActivity {
         private List<ShoppingListItemHandle> items;
         private Context context;
         private int layout;
+        private HashMap<Long, State> stateMap;
 
         ShoppingListItemAdapter(Context context, int resourceId, List<ShoppingListItemHandle> items) {
             super(context, resourceId, items);
             this.items = items;
             this.context = context;
             this.layout = resourceId;
+            this.stateMap = new HashMap<Long, State>();
+            for (ShoppingListItemHandle i : items) {
+                stateMap.put(i.getId(), new State(false));
+            }
+        }
+
+        @Override
+        public void add(ShoppingListItemHandle object) {
+            super.add(object);
+            stateMap.put(object.getId(), new State(false));
+        }
+
+        @Override
+        public void addAll(Collection<? extends ShoppingListItemHandle> collection) {
+            super.addAll(collection);
+            for (ShoppingListItemHandle i : collection) {
+                stateMap.put(i.getId(), new State(false));
+            }
+        }
+
+        class State {
+            public boolean checked;
+            public State(boolean checked) {
+                this.checked = checked;
+            }
+        }
+
+        class ViewHolder {
+            public CheckBox checkBox;
+            public ImageView imageView;
+            public TextView listItemQuantity;
+            public TextView listItemPrice;
         }
 
         @NonNull
         @Override
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            View view;
+            ViewHolder holder;
             if (convertView == null) {
-                view = View.inflate(context, layout, null);
+                convertView = View.inflate(context, layout, null);
+                holder = new ViewHolder();
+                holder.checkBox = (CheckBox) convertView.findViewById(R.id.itemCheckBox);
+                holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        Long id = (Long) buttonView.getTag();
+                        stateMap.get(id).checked = isChecked;
+                    }
+                });
+                holder.imageView = (ImageView) convertView.findViewById(R.id.itemImageView);
+                holder.listItemQuantity = (TextView) convertView.findViewById(R.id.listItemQuantity);
+                holder.listItemPrice = (TextView) convertView.findViewById(R.id.listItemPrice);
+                convertView.setTag(holder);
             } else {
-                view = convertView;
+                holder = (ViewHolder) convertView.getTag();
             }
+            holder.checkBox.setTag(items.get(position).getId()); // so that the checkbox can check the right entry in the StateMap
+            holder.checkBox.setChecked(stateMap.get(items.get(position).getId()).checked);
 
             String itemName = items.get(position).getItem().get().getName();
 
-            CheckBox checkBox = (CheckBox) view.findViewById(R.id.itemCheckBox);
-            checkBox.setText(itemName);
+            holder.checkBox.setText(itemName);
 
             //Puts the image in for each item
-            ImageView imageView = (ImageView) view.findViewById(R.id.itemImageView);
             String imageURL = "http://1030news.com/wp-content/themes/fearless/images/missing-image-640x360.png";
             if(items.get(position).getItem().get().getImageUrl().isPresent() && items.get(position).getItem().get().getImageUrl().get() != "") {
                 imageURL = items.get(position).getItem().get().getImageUrl().get();
@@ -343,25 +394,26 @@ public class ShoppingListActivity extends AppCompatActivity {
                 Picasso.with(getContext())
                         .load(imageURL)
                         .resize(150, 150)
-                        .into(imageView);
+                        .into(holder.imageView);
             }
             else {
                 //phone location
                 Picasso.with(getContext())
                         .load(new File(imageURL))
                         .resize(150, 150)
-                        .into(imageView);
+                        .into(holder.imageView);
             }
 
             //Puts the quantity in for each item
-            TextView listItemQuantity = (TextView) view.findViewById(R.id.listItemQuantity);
-            listItemQuantity.setText("Quantity: " + Integer.toString(items.get(position).getItem().get().getQuantity()));
+            holder.listItemQuantity.setText("Quantity: " + Integer.toString(items.get(position).getItem().get().getQuantity()));
 
             //Puts the price in for each item
-            TextView listItemPrice = (TextView) view.findViewById(R.id.listItemPrice);
-            double price = ((double) items.get(position).getItem().get().getMaxPriceCents().get() / 100);
-            listItemPrice.setText("Price: $" + Double.toString(price));
-            return view;
+
+            double price = ((double) items.get(position).getItem().get().getMaxPriceCents().or(0) / 100);
+            holder.listItemPrice.setText("Price: $" + Double.toString(price));
+
+            ShoppingListItem item = items.get(position).getItem().get();
+            return convertView;
         }
     }
 }
