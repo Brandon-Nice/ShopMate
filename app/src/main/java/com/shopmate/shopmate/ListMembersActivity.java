@@ -3,8 +3,6 @@ package com.shopmate.shopmate;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -14,14 +12,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
-import com.google.common.collect.ImmutableSet;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.GraphRequestBatch;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.shopmate.api.ShopMateServiceProvider;
-import com.shopmate.api.model.item.ShoppingListItem;
 import com.shopmate.api.model.list.ShoppingList;
 
-import org.w3c.dom.Text;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,13 +50,39 @@ public class ListMembersActivity extends AppCompatActivity {
         Futures.addCallback(ShopMateServiceProvider.get().getListAndItemsAsync(AccessToken.getCurrentAccessToken().getToken(), listId), new FutureCallback<ShoppingList>() {
             @Override
             public void onSuccess(final ShoppingList result) {
-                runOnUiThread(new Runnable() {
+                final ArrayList<String> names = new ArrayList<String>();
+
+                ArrayList<GraphRequest> requests = new ArrayList<GraphRequest>();
+
+                for (String id : result.getMemberIds()) {
+                    requests.add(GraphRequest.newGraphPathRequest(AccessToken.getCurrentAccessToken(), id + "?fields=name", new GraphRequest.Callback() {
+                        @Override
+                        public void onCompleted(GraphResponse graphResponse) {
+                            try {
+                                names.add((String) graphResponse.getJSONObject().get("name"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }));
+                }
+
+
+                GraphRequestBatch batch = new GraphRequestBatch(requests);
+                batch.addCallback(new GraphRequestBatch.Callback() {
                     @Override
-                    public void run() {
-                        memberListAdapter.addAll(new ArrayList<String>(result.getMemberIds()));
+                    public void onBatchCompleted(GraphRequestBatch graphRequests) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                memberListAdapter.addAll(names);
+                            }
+                        });
                     }
                 });
 
+
+                batch.executeAsync();
             }
 
             @Override
@@ -68,13 +93,13 @@ public class ListMembersActivity extends AppCompatActivity {
     }
 
     private class MemberListAdapter extends ArrayAdapter<String> {
-        private List<String> memberIds;
+        private List<String> memberNames;
         private Context context;
         private int layout;
 
         MemberListAdapter(Context context, int resourceId, List<String> memberIds) {
             super(context, resourceId, memberIds);
-            this.memberIds = memberIds;
+            this.memberNames = memberIds;
             this.context = context;
             this.layout = resourceId;
         }
@@ -89,7 +114,7 @@ public class ListMembersActivity extends AppCompatActivity {
                 view = convertView;
             }
 
-            String id = memberIds.get(position);
+            String id = memberNames.get(position);
 
             System.out.println("DRAWING");
 
