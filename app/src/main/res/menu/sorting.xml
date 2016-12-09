@@ -11,4 +11,11 @@
         android:orderInCategory="100"
         android:title="Priority"
         app:showAsAction="never" />
+
+    <!-- TODO maybe move this into a different menu, or make the above 2 a dropdown -->
+    <item
+        android:id="@+id/show_members"
+        android:orderInCategory="100"
+        android:title="Show list members"
+        app:showAsAction="never" />
 </menu>
