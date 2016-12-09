@@ -232,7 +232,7 @@ public class ShoppingListActivity extends AppCompatActivity {
                 final ShoppingListItemBuilder bld = new ShoppingListItemBuilder(null)
                         .name(d.getStringExtra("item_name"))
                         .priority(convertPriority(d.getStringExtra("item_prio")))
-                        .imageUrl(d.getStringExtra("item_img"))
+                        .imageUrl(d.hasExtra("item_img") ? d.getStringExtra("item_img") : "")
                         .priority(convertPriority(d.getStringExtra("item_prio")))
                         .quantity(Integer.parseInt(d.getStringExtra("item_quan")))
                         .maxPriceCents(((int) price));
