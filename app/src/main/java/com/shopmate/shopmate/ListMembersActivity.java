@@ -34,11 +34,11 @@ public class ListMembersActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
         // TODO send listId through the intent
         Bundle extras = getIntent().getExtras();
-        final long listId = Long.parseLong(extras.getString("listId"));
+        long listId = extras.getLong("listId");
 
         final Context context = this;
 

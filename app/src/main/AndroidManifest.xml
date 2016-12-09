@@ -46,6 +46,10 @@
             android:label="@string/shopping_list"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
+            android:name=".ListMembersActivity"
+            android:label="Members in this list"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
             android:name=".WalmartSearch"
             android:label="@string/walmart_search"
             android:parentActivityName=".AddItemActivity">

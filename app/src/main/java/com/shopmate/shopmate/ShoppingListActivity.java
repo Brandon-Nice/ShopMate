@@ -20,7 +20,6 @@ import android.widget.TextView;
 
 import com.google.common.base.Optional;
 import com.shopmate.api.ShopMateService;
-import com.google.common.collect.ImmutableSet;
 import com.shopmate.api.net.NetShopMateService;
 import com.squareup.picasso.Picasso;
 import com.facebook.AccessToken;
@@ -41,8 +40,8 @@ import java.util.List;
 
 public class ShoppingListActivity extends AppCompatActivity {
 
+    NetShopMateService netShopMateService = new NetShopMateService();
     static final int ADD_ITEM_REQUEST = 1;
-
     private static ShoppingListItemAdapter sla;
     private Comparator<ShoppingListItemHandle> comparator = new PrioComparator();
     private UpdateListener updateListener;
@@ -56,6 +55,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         final String title = extras.getString("title");
         listId = Long.parseLong(extras.getString("listId"));
+
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
@@ -297,6 +297,9 @@ public class ShoppingListActivity extends AppCompatActivity {
             comparator = new PrioComparator();
             sla.sort(comparator);
             return true;
+        } else if (id == R.id.leave_list) {
+            netShopMateService.leaveListAsync(AccessToken.getCurrentAccessToken().getToken(), listId);
+            finish();
         } else if (id == R.id.share_button){
             //Open up an activity to select the friend who you want to share a list with
             Intent intent = new Intent(ShoppingListActivity.this, SharingListsActivity.class);
@@ -368,6 +371,12 @@ public class ShoppingListActivity extends AppCompatActivity {
             double price = ((double) items.get(position).getItem().get().getMaxPriceCents().or(0) / 100);
             listItemPrice.setText("Price: $" + Double.toString(price));
             return view;
+        }
+
+        @Override
+        public void clear() {
+            super.clear();
+            items.clear();
         }
     }
 }

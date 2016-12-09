@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity
 
     private UpdateListener updateListener;
     private ShoppingListAdapter shoppingLists;
+    private final ShopMateService service = ShopMateServiceProvider.get();
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -217,6 +219,7 @@ public class MainActivity extends AppCompatActivity
 
         shoppingLists = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<ShoppingListEntry>());
         listview.setAdapter(shoppingLists);
+
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -230,29 +233,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        final ShopMateService service = ShopMateServiceProvider.get();
-        String fbToken = AccessToken.getCurrentAccessToken().getToken();
-        Futures.addCallback(service.getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
-            @Override
-            public void onSuccess(GetAllShoppingListsResult result) {
-                final List<ShoppingListEntry> tmp = new ArrayList<>();
-                for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
-                    tmp.add(new ShoppingListEntry(i.getKey(), i.getValue()));
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        shoppingLists.addAll(tmp);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
-            }
-        });
+        UpdateShoppingLists();
 
         ((Button) findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -388,6 +369,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        UpdateShoppingLists();
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -457,6 +444,34 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void UpdateShoppingLists() {
+        final ListView listview = (ListView) findViewById(R.id.userlistView);
+        String fbToken = AccessToken.getCurrentAccessToken().getToken();
+
+        Futures.addCallback(service.getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
+            @Override
+            public void onSuccess(GetAllShoppingListsResult result) {
+                final List<ShoppingListEntry> tmp = new ArrayList<>();
+                for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
+                    tmp.add(new ShoppingListEntry(i.getKey(), i.getValue()));
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        shoppingLists.clear();
+                        shoppingLists.addAll(tmp);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     private int findShoppingList(long id) {
