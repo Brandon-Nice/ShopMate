@@ -57,7 +57,7 @@ public class AddItemActivity extends AppCompatActivity {
     static final int WALMART_SEARCH = 2;
     private static final int SELECT_PICTURE = 1;
     private static final int WRITE_PERMISSION = 0x01;
-    private static Uri selectedImageUri; //stores the image url for the item
+    private Uri selectedImageUri; //stores the image url for the item
     private Spinner spinner; //stores the selected item importance taken from the dropdown menu
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +147,10 @@ public class AddItemActivity extends AppCompatActivity {
 
                     TextView desc = (TextView) findViewById(R.id.itemDesc);
                     desc.setText(walmartItemDesc);
+
+                    TextView quant = (TextView) findViewById(R.id.itemQty);
+                    quant.setText("1");
+
 
                     ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
                     Picasso.with(this).load(walmartItemURL).into(image);
