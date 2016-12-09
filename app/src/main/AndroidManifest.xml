@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -20,6 +21,7 @@
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name"
@@ -41,17 +43,57 @@
             android:windowSoftInputMode="stateVisible" />
         <activity
             android:name=".ShoppingListActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".WalmartSearch" />
+            android:label="@string/shopping_list"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".ListMembersActivity"
+            android:label="Members in this list"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".WalmartSearch"
+            android:label="@string/walmart_search"
+            android:parentActivityName=".AddItemActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".AddItemActivity"/>
+        </activity>
+
         <activity
             android:name=".InviteRequestsActivity"
             android:label="@string/title_activity_invite_requests"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".RequestHistoryActivity"
             android:label="RequestHistoryActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".SharingListsActivity"
+            android:label="@string/title_activity_sharing_lists"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service
+            android:name=".MessagingService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".InstanceIdService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".InviteService"
+            android:exported="false"></service><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>

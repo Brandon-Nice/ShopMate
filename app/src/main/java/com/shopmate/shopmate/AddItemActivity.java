@@ -1,6 +1,7 @@
 package com.shopmate.shopmate;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -13,6 +14,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -26,6 +29,7 @@ import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -73,39 +77,28 @@ public class AddItemActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
-        // For the Walmart Search feature
-        ((ImageButton)findViewById(R.id.addWalmart)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent init = new Intent(AddItemActivity.this, WalmartSearch.class);
-                init.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivityForResult(init, WALMART_SEARCH);
-            }
-        });
-
         // For the checkmark to be pressed (on the bottom) once the user adds an item
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name.getText().length() != 0) {
-                    Intent res = new Intent();
-                    res.putExtra("item_name", name.getText().toString());
-                    res.putExtra("item_prio", spinner.getSelectedItem().toString());
-                    setResult(RESULT_OK, res);
-                }
 
-                //Before the activity finishes, send data to the database via syncItem()
-                try {
-                    syncItem();
-                } catch (ExecutionException e) {
-                    setResult(RESULT_CANCELED);
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    setResult(RESULT_CANCELED);
-                    e.printStackTrace();
+
+                EditText itemPrice = (EditText)findViewById(R.id.itemPrice);
+                EditText itemQuantity = (EditText)findViewById(R.id.itemQty);
+
+                if (name.getText().length() == 0) {
+                    name.setError("Item Name is required!");
                 }
-                finish();
+                else if(itemPrice.getText().toString().trim().equals("")) {
+                    itemPrice.setError("Item Price is required!");
+                }
+                else if(itemQuantity.getText().toString().trim().equals("")) {
+                    itemQuantity.setError("Item Quantity is required!");
+                }
+                else {
+                    syncItem();
+                }
             }
         });
         name = (EditText)findViewById(R.id.itemName);
@@ -157,6 +150,7 @@ public class AddItemActivity extends AppCompatActivity {
 
                     ImageButton image = (ImageButton) findViewById(R.id.itemPhoto);
                     Picasso.with(this).load(walmartItemURL).into(image);
+                    selectedImageUri = Uri.parse(walmartItemURL);
             }
         }
     }
@@ -218,7 +212,7 @@ public class AddItemActivity extends AppCompatActivity {
     }
 
     //Ties all of the information passed from the client to the backend server via ShopMateService API
-    private void syncItem() throws ExecutionException, InterruptedException{
+    private void syncItem() {
 
         //Get the list name & list id values from the ShoppingListActivity
         Intent intent = getIntent();
@@ -241,7 +235,7 @@ public class AddItemActivity extends AppCompatActivity {
         //Create a shopping list item to be used in the next API call
         ShoppingListItem testItem = new ShoppingListItemBuilder(name.getText().toString())
                 .description(itemDescription.getText().toString().trim())
-                .imageUrl(selectedImageUri == null ? "" : selectedImageUri.toString())
+                .imageUrl(selectedImageUri == null ? Optional.<String>absent() : Optional.of(selectedImageUri.toString()))
                 .maxPriceCents( Math.round(Float.parseFloat(itemPrice.getText().toString()) * 100) )
                 .quantity(Integer.parseInt(itemQuantity.getText().toString()))
                 .quantityPurchased(0) //TODO: Maybe change this val?
@@ -255,15 +249,33 @@ public class AddItemActivity extends AppCompatActivity {
         //CreateShoppingListResult createListResult = service.createListAsync(fbToken, listName, ImmutableSet.<String>of()).get();
         //CreateShoppingListItemResult createItemResult = service.createItemAsync(fbToken, createListResult.getId(), testItem).get();
         //ShoppingListItem createdItem = createItemResult.getItem();
+        final ProgressDialog progress = new ProgressDialog(this);
+        progress.setMessage("Adding item...");
+        progress.show();
 
         //Register callbacks to run on the main thread once the API call completes
         Futures.addCallback(future, new FutureCallback<CreateShoppingListItemResult>() {
-            public void onSuccess(CreateShoppingListItemResult result) {
+            public void onSuccess(final CreateShoppingListItemResult result) {
                 //Use runOnUiThread to update UI controls
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(AddItemActivity.this, "Success! Item synced.", Toast.LENGTH_LONG).show();
+
+                        EditText itemPrice = (EditText)findViewById(R.id.itemPrice);
+                        EditText itemQuantity = (EditText)findViewById(R.id.itemQty);
+
+                        progress.dismiss();
+                        Intent res = new Intent();
+                        res.putExtra("item_name", name.getText().toString());
+                        res.putExtra("item_prio", spinner.getSelectedItem().toString());
+                        res.putExtra("item_id", Long.toString(result.getId()));
+                        res.putExtra("item_price", itemPrice.getText().toString());
+                        res.putExtra("item_quan", itemQuantity.getText().toString());
+                        if(selectedImageUri != null) {
+                            res.putExtra("item_img", selectedImageUri.toString());
+                        }
+                        setResult(RESULT_OK, res);
+                        finish();
                     }
                 });
             }
@@ -272,6 +284,7 @@ public class AddItemActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        progress.dismiss();
                         Toast.makeText(AddItemActivity.this, "Unable to sync item.", Toast.LENGTH_LONG).show();
                         t.printStackTrace();
                         Log.e("ErrorStuff",  Log.getStackTraceString(t), t);
@@ -295,4 +308,28 @@ public class AddItemActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.walmart_search_button, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.walmart_search_bar) {
+            Intent init = new Intent(AddItemActivity.this, WalmartSearch.class);
+            init.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivityForResult(init, WALMART_SEARCH);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }

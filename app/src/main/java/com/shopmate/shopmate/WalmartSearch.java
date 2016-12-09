@@ -8,8 +8,13 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -39,6 +44,7 @@ import com.squareup.picasso.Picasso;
 public class WalmartSearch extends AppCompatActivity {
 
     public static EditText walmartEditText;
+    String searchTerms = "";
     public String url;
     private ListView walmartList;
     private ArrayList<ShoppingListItem> walmartResult;
@@ -50,17 +56,23 @@ public class WalmartSearch extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_walmart_search);
 
+        findViewById(R.id.loadingPanel).setVisibility(View.INVISIBLE);
 
-        ((Button)findViewById(R.id.walmartSearchButton)).setOnClickListener(new View.OnClickListener() {
+        (findViewById(R.id.walmartSearchButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 walmartEditText = (EditText) findViewById(R.id.walmartEditText);
-                String searchTerms = walmartEditText.getText().toString();
-                if (searchTerms != null || !searchTerms.equals(" ")) {
+                searchTerms = walmartEditText.getText().toString();
+                if (!searchTerms.equals(" ") && !searchTerms.equals("")) {
                     new JSONParse().execute();
                 }
                 else {
-                    //TODO: Toast message saying to enter a field in the textbox
+                    walmartEditText.setError("Search text is required!");
+                }
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
             }
 
@@ -83,8 +95,38 @@ public class WalmartSearch extends AppCompatActivity {
 
             }
         });
-    }
 
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        walmartEditText = (EditText) findViewById(R.id.walmartEditText);
+        walmartEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    searchTerms = v.getText().toString();
+                    if (!searchTerms.equals(" ") && !searchTerms.equals("")) {
+                        new JSONParse().execute();
+                    }
+                    else {
+                        walmartEditText.setError("Search text is required!");
+                    }
+
+                    View view = getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                }
+                else if(event.getKeyCode() == KeyEvent.KEYCODE_SPACE) {
+                    searchTerms = v.getText().toString();
+                    new JSONParse().execute();
+                }
+                return true;
+            }
+        });
+    }
 
     public static JSONObject getJSONObjectFromURL(String urlString) throws IOException, JSONException {
 
@@ -106,7 +148,7 @@ public class WalmartSearch extends AppCompatActivity {
 
         char[] buffer = new char[1024];
 
-        String jsonString = new String();
+        String jsonString;
 
         StringBuilder sb = new StringBuilder();
         String line;
@@ -127,9 +169,9 @@ public class WalmartSearch extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+
             String searchTerms = walmartEditText.getText().toString();
-                //TODO: Search the Walmart API database and populate the listview of results.
-                //use gson to parse walmart api returns
                 //TODO: Extra features: category, sorting (increasing/decreasing price, relevant, bestsellers)
 
                 //Prepare the URL
@@ -149,6 +191,9 @@ public class WalmartSearch extends AppCompatActivity {
                     if sort changed from relevance to price, title, bestseller, customerrating, new, add it to the search query
                     if order is changed from asc to desc, add it to the search query (only needed for price, title, customerrating)
                      */
+                //Add the number of displayed items to 25 for more results
+                url += "&numItems=25";
+
                 System.out.println("URL:" + url);
 
         }
@@ -158,7 +203,8 @@ public class WalmartSearch extends AppCompatActivity {
             try {
                 JSONObject json = getJSONObjectFromURL(url);
                     JSONArray jsonArray = json.getJSONArray("items");
-                    System.out.println(jsonArray.toString());
+                    int numItems = json.getInt("numItems");
+                    System.out.println("numItems: " + numItems);
 
                     walmartResult = new ArrayList<ShoppingListItem>();
 
@@ -184,6 +230,9 @@ public class WalmartSearch extends AppCompatActivity {
                                 .build();
 
                         walmartResult.add(Item);
+                        if(numItems == 0) {
+                            walmartResult = null;
+                        }
                     }
                 return json;
             }
@@ -197,13 +246,17 @@ public class WalmartSearch extends AppCompatActivity {
         }
 
         protected void onPostExecute(JSONObject result) {
-            //TODO: Place arraylist in listView
-            ShoppingListItemAdapter shoppingListItemAdapter = new ShoppingListItemAdapter(getApplicationContext(), R.layout.shopping_list_item, walmartResult);
-            walmartList.setAdapter(shoppingListItemAdapter);
+            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+            if(walmartResult != null && walmartResult.size() > 0) {
+                ShoppingListItemAdapter shoppingListItemAdapter = new ShoppingListItemAdapter(getApplicationContext(), R.layout.shopping_list_item, walmartResult);
+                walmartList.setAdapter(shoppingListItemAdapter);
+            }
+            else {
+                Toast.makeText(WalmartSearch.this, "Resulsts not found! Please try again.", Toast.LENGTH_SHORT);
+            }
         }
     }
     private class ShoppingListItemAdapter extends ArrayAdapter<ShoppingListItem> {
-        // TODO create an item class that contains things like price, quantity, brand, etc.
         private List<ShoppingListItem> items;
         private Context context;
 
@@ -238,7 +291,6 @@ public class WalmartSearch extends AppCompatActivity {
             textViewPrice.setText("$" + itemPriceName);
 
             ImageView imageView = (ImageView) view.findViewById(R.id.itemImage);
-            //TODO: use Picasso to add image
             Picasso.with(getApplicationContext()).load(itemPicture).into(imageView);
 
             return view;

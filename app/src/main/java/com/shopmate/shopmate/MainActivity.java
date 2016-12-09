@@ -3,9 +3,11 @@ package com.shopmate.shopmate;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -29,14 +31,21 @@ import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
-import com.google.common.collect.ImmutableMap;
+import com.facebook.share.model.AppInviteContent;
+import com.facebook.share.widget.AppInviteDialog;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.shopmate.api.ShopMateService;
 import com.shopmate.api.ShopMateServiceProvider;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.result.CreateShoppingListResult;
@@ -58,14 +67,76 @@ public class MainActivity extends AppCompatActivity
     static CallbackManager callbackManager;
     static int i = 1;
 
-    private ShoppingListAdapter a;
+    private UpdateListener updateListener;
+    private ShoppingListAdapter shoppingLists;
+    private final ShopMateService service = ShopMateServiceProvider.get();
 
-    private class ShoppingListAdapter extends ArrayAdapter<Map.Entry<Long, ShoppingList>> {
-        private List<Map.Entry<Long, ShoppingList>> items;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("Main Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        client.disconnect();
+    }
+
+    private class ShoppingListEntry {
+        private final long id;
+        private final ShoppingList list;
+
+        public ShoppingListEntry(long id, ShoppingList list) {
+            this.id = id;
+            this.list = list;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public ShoppingList getList() {
+            return list;
+        }
+    }
+
+    private class ShoppingListAdapter extends ArrayAdapter<ShoppingListEntry> {
+        private List<ShoppingListEntry> items;
         private Context context;
         private int layout;
 
-        ShoppingListAdapter(Context context, int resourceId, List<Map.Entry<Long, ShoppingList>> items) {
+        ShoppingListAdapter(Context context, int resourceId, List<ShoppingListEntry> items) {
             super(context, resourceId, items);
             this.items = items;
             this.context = context;
@@ -82,12 +153,11 @@ public class MainActivity extends AppCompatActivity
                 view = convertView;
             }
             TextView title = (TextView) view.findViewById(R.id.label);
-            title.setText(items.get(position).getValue().getTitle());
+            title.setText(items.get(position).getList().getTitle());
 
             return view;
         }
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +165,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -145,31 +217,25 @@ public class MainActivity extends AppCompatActivity
         //using arraylists to store data just for the sake of having data
         //TODO: Create a custom Adapter class to take in HashMaps instead to make this more efficient
 
-        //final ArrayAdapter a = new ArrayAdapter(this, R.layout.rowlayout, R.id.label, new ArrayList<String>());
-        a = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<Map.Entry<Long, ShoppingList>>());
-        listview.setAdapter(a);
+        shoppingLists = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<ShoppingListEntry>());
+        listview.setAdapter(shoppingLists);
+
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(view.getContext(), ShoppingListActivity.class);
                 Bundle extras = new Bundle();
-                Map.Entry<Long, ShoppingList> data = (Map.Entry<Long, ShoppingList>) parent.getItemAtPosition(position);
-                extras.putString("title", data.getValue().getTitle());
-                extras.putString("listId", Long.toString(data.getKey()));
+                ShoppingListEntry entry = (ShoppingListEntry) parent.getItemAtPosition(position);
+                extras.putString("title", entry.getList().getTitle());
+                extras.putString("listId", Long.toString(entry.getId()));
                 i.putExtras(extras);
-                ///Intent j = new Intent(view.getContext(), AddItemActivity.class);
-                //i.putExtra("title", (String)parent.getItemAtPosition(position));
-                //j.putExtra("title", (String)parent.getItemAtPosition(position));
-                //i.putExtra("listId", listId);
-                //j.putExtra("listId", listId);
                 startActivity(i);
             }
         });
-        
 
         UpdateShoppingLists();
 
-        ((Button)findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
+        ((Button) findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final String fbToken = AccessToken.getCurrentAccessToken().getToken();
@@ -188,14 +254,16 @@ public class MainActivity extends AppCompatActivity
                                 if (listTitle.length() == 0) {
                                     return;
                                 }
-                                Futures.addCallback(ShopMateServiceProvider.get().createListAsync(fbToken, listTitle, invites), new FutureCallback<CreateShoppingListResult>() {
+                                Futures.addCallback(service.createListAsync(fbToken, listTitle, invites), new FutureCallback<CreateShoppingListResult>() {
                                     @Override
                                     public void onSuccess(CreateShoppingListResult result) {
-                                        final Map.Entry<Long, ShoppingList> tmp = new AbstractMap.SimpleImmutableEntry<Long, ShoppingList>(result.getId(), result.getList());
+                                        final ShoppingListEntry tmp = new ShoppingListEntry(result.getId(), result.getList());
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                a.insert(tmp, 0);
+                                                if (findShoppingList(tmp.getId()) < 0) {
+                                                    shoppingLists.insert(tmp, 0);
+                                                }
                                             }
                                         });
                                         Snackbar.make(listview, "success", Snackbar.LENGTH_LONG).show();
@@ -218,9 +286,66 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
+
+        // Always register the FCM token with the server
+        InstanceIdService.registerFcmToken();
+
+        updateListener = new UpdateListener(this, new UpdateHandler() {
+            @Override
+            public void onListShared(final long listId) {
+                if (findShoppingList(listId) >= 0) {
+                    return;
+                }
+                String fbToken = AccessToken.getCurrentAccessToken().getToken();
+                Futures.addCallback(service.getListAndItemsAsync(fbToken, listId), new FutureCallback<ShoppingList>() {
+                    @Override
+                    public void onSuccess(ShoppingList result) {
+                        final ShoppingListEntry entry = new ShoppingListEntry(listId, result);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (findShoppingList(listId) < 0) {
+                                    shoppingLists.insert(entry, 0);
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
+            }
+
+            @Override
+            public void onListDeleted(long listId) {
+                int index = findShoppingList(listId);
+                if (index >= 0) {
+                    shoppingLists.remove(shoppingLists.getItem(index));
+                }
+            }
+
+            @Override
+            public void onListMemberLeft(long listId, String userId) {
+                if (userId == AccessToken.getCurrentAccessToken().getUserId()) {
+                    onListDeleted(listId);
+                }
+            }
+        });
+        updateListener.register();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
-//    @Override
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        updateListener.unregister();
+    }
+
+    //    @Override
 //    public View getView(int position, View convertView, ViewGroup parent) {
 //        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 //        View rowView = inflater.inflate(R.layout.rowlayout, parent, false);
@@ -301,13 +426,20 @@ public class MainActivity extends AppCompatActivity
             startActivity(new Intent(MainActivity.this, InviteRequestsActivity.class));
         } else if (id == R.id.nav_list_req_history) {
             startActivity(new Intent(MainActivity.this, RequestHistoryActivity.class));
-        }
+        } else if (id == R.id.nav_share) {
+            String appLinkUrl, previewImageUrl;
 
-//        } else if (id == R.id.nav_share) {
-//
-//        } else if (id == R.id.nav_send) {
-//
-//        }
+            appLinkUrl = "https://fb.me/1210406722382112";
+            previewImageUrl = "https://i.imgur.com/UWuC035.png";
+
+            if (AppInviteDialog.canShow()) {
+                AppInviteContent content = new AppInviteContent.Builder()
+                        .setApplinkUrl(appLinkUrl)
+                        .setPreviewImageUrl(previewImageUrl)
+                        .build();
+                AppInviteDialog.show(this, content);
+            }
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -316,21 +448,21 @@ public class MainActivity extends AppCompatActivity
 
     private void UpdateShoppingLists() {
         final ListView listview = (ListView) findViewById(R.id.userlistView);
-
         String fbToken = AccessToken.getCurrentAccessToken().getToken();
-        Futures.addCallback(ShopMateServiceProvider.get().getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
+
+        Futures.addCallback(service.getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
             @Override
             public void onSuccess(GetAllShoppingListsResult result) {
-                final ArrayList<Map.Entry<Long, ShoppingList>> tmp = new ArrayList<Map.Entry<Long, ShoppingList>>();
+                final List<ShoppingListEntry> tmp = new ArrayList<>();
                 for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
-                    tmp.add(i);
+                    tmp.add(new ShoppingListEntry(i.getKey(), i.getValue()));
                 }
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        a.clear();
-                        a.addAll(tmp);
+                        shoppingLists.clear();
+                        shoppingLists.addAll(tmp);
                     }
                 });
             }
@@ -342,4 +474,13 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private int findShoppingList(long id) {
+        for (int i = 0; i < shoppingLists.getCount(); i++) {
+            ShoppingListEntry entry = shoppingLists.getItem(i);
+            if (entry.getId() == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }

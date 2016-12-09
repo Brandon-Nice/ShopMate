@@ -16,7 +16,10 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import com.google.common.base.Optional;
+import com.shopmate.api.ShopMateService;
 import com.shopmate.api.net.NetShopMateService;
 import com.squareup.picasso.Picasso;
 import com.facebook.AccessToken;
@@ -29,17 +32,20 @@ import com.shopmate.api.model.item.ShoppingListItemHandle;
 import com.shopmate.api.model.item.ShoppingListItemPriority;
 import com.shopmate.api.model.list.ShoppingList;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+
 
 public class ShoppingListActivity extends AppCompatActivity {
 
     NetShopMateService netShopMateService = new NetShopMateService();
     static final int ADD_ITEM_REQUEST = 1;
-    static ShoppingListItemAdapter sla;
-    private String listId;
+    private static ShoppingListItemAdapter sla;
+    private Comparator<ShoppingListItemHandle> comparator = new PrioComparator();
+    private UpdateListener updateListener;
+    private long listId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +54,14 @@ public class ShoppingListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         Bundle extras = getIntent().getExtras();
         final String title = extras.getString("title");
-        listId = extras.getString("listId");
+        listId = Long.parseLong(extras.getString("listId"));
+
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
         // These are just some mock items to add to the list.
         // TODO retrieve these items from the database
-        final List<ShoppingListItem> items = new ArrayList<ShoppingListItem>();
+        final List<ShoppingListItemHandle> items = new ArrayList<ShoppingListItemHandle>();
 
         // Creates an adapter which is used maintain and render a list of items
         final ListView shoppingList = (ListView) findViewById(R.id.shoppingList);
@@ -63,18 +70,14 @@ public class ShoppingListActivity extends AppCompatActivity {
         assert shoppingList != null;
         shoppingList.setAdapter(shoppingListItemAdapter);
 
-        Futures.addCallback(ShopMateServiceProvider.get().getListAndItemsAsync(AccessToken.getCurrentAccessToken().getToken(), Long.parseLong(listId)), new FutureCallback<ShoppingList>() {
+        Futures.addCallback(ShopMateServiceProvider.get().getListAndItemsAsync(AccessToken.getCurrentAccessToken().getToken(), listId), new FutureCallback<ShoppingList>() {
             @Override
-            public void onSuccess(ShoppingList result) {
-                final ArrayList<ShoppingListItem> tmp = new ArrayList<ShoppingListItem>();
-                for (ShoppingListItemHandle i : result.getItems()) {
-                    tmp.add(i.getItem().or(new ShoppingListItemBuilder("garbage").build()));
-                }
-
+            public void onSuccess(final ShoppingList result) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        sla.addAll(tmp);
+                        sla.addAll(result.getItems());
+                        sla.sort(comparator);
                     }
                 });
             }
@@ -95,11 +98,113 @@ public class ShoppingListActivity extends AppCompatActivity {
                 Intent i = new Intent(view.getContext(), AddItemActivity.class);
                 Bundle extras = new Bundle();
                 extras.putString("title", title);
-                extras.putString("listId", listId);
+                extras.putString("listId", Long.toString(listId));
                 i.putExtras(extras);
                 startActivityForResult(i, ADD_ITEM_REQUEST);
             }
         });
+
+        updateListener = new UpdateListener(this, new UpdateHandler() {
+            @Override
+            public void onItemAdded(long itemListId, final long itemId) {
+                if (itemListId != listId || findItem(itemId) >= 0) {
+                    return;
+                }
+                String fbToken = AccessToken.getCurrentAccessToken().getToken();
+                ShopMateService service = ShopMateServiceProvider.get();
+                Futures.addCallback(service.getItemAsync(fbToken, itemId), new FutureCallback<ShoppingListItem>() {
+                    @Override
+                    public void onSuccess(final ShoppingListItem result) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (findItem(itemId) >= 0) {
+                                    return;
+                                }
+                                sla.add(new ShoppingListItemHandle(itemId, Optional.of(result)));
+                                sla.sort(comparator);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
+            }
+
+            @Override
+            public void onItemUpdated(final long itemId) {
+                if (findItem(itemId) < 0) {
+                    return;
+                }
+                String fbToken = AccessToken.getCurrentAccessToken().getToken();
+                ShopMateService service = ShopMateServiceProvider.get();
+                Futures.addCallback(service.getItemAsync(fbToken, itemId), new FutureCallback<ShoppingListItem>() {
+                    @Override
+                    public void onSuccess(final ShoppingListItem result) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                int index = findItem(itemId);
+                                if (index < 0) {
+                                    return;
+                                }
+                                sla.remove(sla.getItem(index));
+                                sla.add(new ShoppingListItemHandle(itemId, Optional.of(result)));
+                                sla.sort(comparator);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
+            }
+
+            @Override
+            public void onItemDeleted(long itemId) {
+                int index = findItem(itemId);
+                if (index >= 0) {
+                    sla.remove(sla.getItem(index));
+                }
+            }
+
+            @Override
+            public void onListDeleted(long deletedListId) {
+                if (deletedListId == listId) {
+                    // TODO: Display a message telling the user that the list was deleted?
+                    finish();
+                }
+            }
+
+            @Override
+            public void onListMemberLeft(long leftListId, String userId) {
+                if (leftListId == listId && userId == AccessToken.getCurrentAccessToken().getUserId()) {
+                    // TODO: Display a message telling the user that they were kicked?
+                    finish();
+                }
+            }
+        });
+        updateListener.register();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        updateListener.unregister();
+    }
+
+    private int findItem(long itemId) {
+        for (int i = 0; i < sla.getCount(); i++) {
+            if (sla.getItem(i).getId() == itemId) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     //Converts a string priority to the ShoppingListItemPriority enum
@@ -122,14 +227,25 @@ public class ShoppingListActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == ADD_ITEM_REQUEST) {
                 final Intent d = data;
+                double price = Double.parseDouble(d.getStringExtra("item_price"));
+                price *= 100;
                 final ShoppingListItemBuilder bld = new ShoppingListItemBuilder(null)
                         .name(d.getStringExtra("item_name"))
-                        .priority(convertPriority(d.getStringExtra("item_prio")));
+                        .priority(convertPriority(d.getStringExtra("item_prio")))
+                        .imageUrl(d.getStringExtra("item_img"))
+                        .priority(convertPriority(d.getStringExtra("item_prio")))
+                        .quantity(Integer.parseInt(d.getStringExtra("item_quan")))
+                        .maxPriceCents(((int) price));
 
+                final long id = Long.parseLong(d.getStringExtra("item_id"));
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        sla.add(bld.build());
+                        if (findItem(id) >= 0) {
+                            return;
+                        }
+                        sla.add(new ShoppingListItemHandle(id, Optional.of(bld.build())));
+                        sla.sort(comparator);
                     }
                 });
             }
@@ -140,22 +256,28 @@ public class ShoppingListActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.sorting, menu);
+        getMenuInflater().inflate(R.menu.share_button_menu, menu);
         return true;
     }
 
-    private class AlphaComparator implements Comparator<ShoppingListItem> {
+    private class AlphaComparator implements Comparator<ShoppingListItemHandle> {
 
         @Override
-        public int compare(ShoppingListItem lhs, ShoppingListItem rhs) {
-            return lhs.getName().compareToIgnoreCase(rhs.getName());
+        public int compare(ShoppingListItemHandle lhs, ShoppingListItemHandle rhs) {
+            return lhs.getItem().get().getName().compareToIgnoreCase(rhs.getItem().get().getName());
         }
     }
 
-    private class PrioComparator implements Comparator<ShoppingListItem> {
+    private class PrioComparator implements Comparator<ShoppingListItemHandle> {
 
         @Override
-        public int compare(ShoppingListItem lhs, ShoppingListItem rhs) {
-            return rhs.getPriority().compareTo(lhs.getPriority()); // given current enum, this orders HIGH to LOW
+        public int compare(ShoppingListItemHandle lhs, ShoppingListItemHandle rhs) {
+            int comparison = rhs.getItem().get().getPriority().compareTo(lhs.getItem().get().getPriority()); // given current enum, this orders HIGH to LOW
+            if (comparison != 0) {
+                return comparison;
+            }
+            // Compare by name if two items have the same priority
+            return lhs.getItem().get().getName().compareToIgnoreCase(rhs.getItem().get().getName());
         }
     }
 
@@ -168,26 +290,36 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.sort_alpha) {
-            sla.sort(new AlphaComparator());
+            comparator = new AlphaComparator();
+            sla.sort(comparator);
             return true;
         } else if (id == R.id.sort_prio) {
-            sla.sort(new PrioComparator());
+            comparator = new PrioComparator();
+            sla.sort(comparator);
             return true;
         } else if (id == R.id.leave_list) {
-            netShopMateService.leaveListAsync(AccessToken.getCurrentAccessToken().getToken(), Long.parseLong(listId));
+            netShopMateService.leaveListAsync(AccessToken.getCurrentAccessToken().getToken(), listId);
             finish();
-            return true;
+        } else if (id == R.id.share_button){
+            //Open up an activity to select the friend who you want to share a list with
+            Intent intent = new Intent(ShoppingListActivity.this, SharingListsActivity.class);
+            intent.putExtra("listId", listId);
+            startActivity(intent);
+        } else if (id == R.id.show_members) {
+            Intent intent = new Intent(this, ListMembersActivity.class);
+            intent.putExtra("listId", listId);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private class ShoppingListItemAdapter extends ArrayAdapter<ShoppingListItem> {
-        private List<ShoppingListItem> items;
+    private class ShoppingListItemAdapter extends ArrayAdapter<ShoppingListItemHandle> {
+        private List<ShoppingListItemHandle> items;
         private Context context;
         private int layout;
 
-        ShoppingListItemAdapter(Context context, int resourceId, List<ShoppingListItem> items) {
+        ShoppingListItemAdapter(Context context, int resourceId, List<ShoppingListItemHandle> items) {
             super(context, resourceId, items);
             this.items = items;
             this.context = context;
@@ -204,17 +336,40 @@ public class ShoppingListActivity extends AppCompatActivity {
                 view = convertView;
             }
 
-            String itemName = items.get(position).getName();
+            String itemName = items.get(position).getItem().get().getName();
 
             CheckBox checkBox = (CheckBox) view.findViewById(R.id.itemCheckBox);
             checkBox.setText(itemName);
 
+            //Puts the image in for each item
             ImageView imageView = (ImageView) view.findViewById(R.id.itemImageView);
-            Picasso.with(getContext())
-                    .load("http://doseoffunny.com/wp-content/uploads/2014/04/tumblr_mtanx0poHz1qdlh1io1_400.gif")
-                    .resize(150,150)
-                    .into(imageView);
+            String imageURL = "http://1030news.com/wp-content/themes/fearless/images/missing-image-640x360.png";
+            if(items.get(position).getItem().get().getImageUrl().isPresent() && items.get(position).getItem().get().getImageUrl().get() != "") {
+                imageURL = items.get(position).getItem().get().getImageUrl().get();
+            }
+            if(imageURL.contains("http")) {
+                //web location
+                Picasso.with(getContext())
+                        .load(imageURL)
+                        .resize(150, 150)
+                        .into(imageView);
+            }
+            else {
+                //phone location
+                Picasso.with(getContext())
+                        .load(new File(imageURL))
+                        .resize(150, 150)
+                        .into(imageView);
+            }
 
+            //Puts the quantity in for each item
+            TextView listItemQuantity = (TextView) view.findViewById(R.id.listItemQuantity);
+            listItemQuantity.setText("Quantity: " + Integer.toString(items.get(position).getItem().get().getQuantity()));
+
+            //Puts the price in for each item
+            TextView listItemPrice = (TextView) view.findViewById(R.id.listItemPrice);
+            double price = ((double) items.get(position).getItem().get().getMaxPriceCents().or(0) / 100);
+            listItemPrice.setText("Price: $" + Double.toString(price));
             return view;
         }
 
