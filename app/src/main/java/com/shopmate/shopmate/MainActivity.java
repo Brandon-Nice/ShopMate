@@ -360,66 +360,66 @@ public class MainActivity extends AppCompatActivity
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-        payClient = new GoogleApiClient.Builder(this)
-                .addApi(Wallet.API,
-                        new Wallet.WalletOptions.Builder()
-                                .setEnvironment(WalletConstants.ENVIRONMENT_TEST)
-                                .build())
-                .build();
-        Toast.makeText(this, "starting", Toast.LENGTH_SHORT).show();
-        payClient.connect();
-        Wallet.Payments.isReadyToPay(payClient, IsReadyToPayRequest.newBuilder().build())
-                .setResultCallback(new ResultCallback<BooleanResult>() {
-            @Override
-            public void onResult(@NonNull BooleanResult booleanResult) {
-                if (booleanResult.getStatus().isSuccess()) {
-                    if (booleanResult.getValue()) {
-                        Toast.makeText(MainActivity.this, "success", Toast.LENGTH_SHORT).show();
-
-                        PaymentMethodTokenizationParameters parameters = PaymentMethodTokenizationParameters.newBuilder()
-                                .setPaymentMethodTokenizationType(PaymentMethodTokenizationType.NETWORK_TOKEN)
-                                .addParameter("publicKey", "BO39Rh43UGXMQy5PAWWe7UGWd2a9YRjNLPEEVe+zWIbdIgALcDcnYCuHbmrrzl7h8FZjl6RCzoi5/cDrqXNRVSo=")
-                                .build();
-                        MaskedWalletRequest request = MaskedWalletRequest.newBuilder()
-                                .setCurrencyCode("USD")
-                                .setEstimatedTotalPrice("15.00")
-                                .setPaymentMethodTokenizationParameters(parameters)
-                                .build();
-                        WalletFragmentStyle walletFragmentStyle = new WalletFragmentStyle()
-                                .setBuyButtonText(WalletFragmentStyle.BuyButtonText.BUY_WITH)
-                                .setBuyButtonAppearance(WalletFragmentStyle.BuyButtonAppearance.ANDROID_PAY_DARK)
-                                .setBuyButtonWidth(WalletFragmentStyle.Dimension.MATCH_PARENT);
-
-                        WalletFragmentOptions walletFragmentOptions = WalletFragmentOptions.newBuilder()
-                                .setEnvironment(WalletConstants.ENVIRONMENT_TEST)
-                                .setFragmentStyle(walletFragmentStyle)
-                                .setTheme(WalletConstants.THEME_LIGHT)
-                                .setMode(WalletFragmentMode.BUY_BUTTON)
-                                .build();
-
-                        SupportWalletFragment mWalletFragment = SupportWalletFragment.newInstance(walletFragmentOptions);
-
-                        WalletFragmentInitParams.Builder startParamsBuilder =
-                                WalletFragmentInitParams.newBuilder()
-                                        .setMaskedWalletRequest(request)
-                                        .setMaskedWalletRequestCode(REQUEST_CODE_MASKED_WALLET);
-                        mWalletFragment.initialize(startParamsBuilder.build());
-
-                        // add Wallet fragment to the UI
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.dynamic_wallet_button_fragment, mWalletFragment)
-                                .commit();
-
-                        // show pay button
-                    } else {
-                        Toast.makeText(MainActivity.this, "failure", Toast.LENGTH_SHORT).show();
-                        // show not pay button
-                    }
-                } else {
-                    Toast.makeText(MainActivity.this, "wtf", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+//        payClient = new GoogleApiClient.Builder(this)
+//                .addApi(Wallet.API,
+//                        new Wallet.WalletOptions.Builder()
+//                                .setEnvironment(WalletConstants.ENVIRONMENT_TEST)
+//                                .build())
+//                .build();
+//        Toast.makeText(this, "starting", Toast.LENGTH_SHORT).show();
+//        payClient.connect();
+//        Wallet.Payments.isReadyToPay(payClient, IsReadyToPayRequest.newBuilder().build())
+//                .setResultCallback(new ResultCallback<BooleanResult>() {
+//            @Override
+//            public void onResult(@NonNull BooleanResult booleanResult) {
+//                if (booleanResult.getStatus().isSuccess()) {
+//                    if (booleanResult.getValue()) {
+//                        Toast.makeText(MainActivity.this, "success", Toast.LENGTH_SHORT).show();
+//
+//                        PaymentMethodTokenizationParameters parameters = PaymentMethodTokenizationParameters.newBuilder()
+//                                .setPaymentMethodTokenizationType(PaymentMethodTokenizationType.NETWORK_TOKEN)
+//                                .addParameter("publicKey", "BO39Rh43UGXMQy5PAWWe7UGWd2a9YRjNLPEEVe+zWIbdIgALcDcnYCuHbmrrzl7h8FZjl6RCzoi5/cDrqXNRVSo=")
+//                                .build();
+//                        MaskedWalletRequest request = MaskedWalletRequest.newBuilder()
+//                                .setCurrencyCode("USD")
+//                                .setEstimatedTotalPrice("15.00")
+//                                .setPaymentMethodTokenizationParameters(parameters)
+//                                .build();
+//                        WalletFragmentStyle walletFragmentStyle = new WalletFragmentStyle()
+//                                .setBuyButtonText(WalletFragmentStyle.BuyButtonText.BUY_WITH)
+//                                .setBuyButtonAppearance(WalletFragmentStyle.BuyButtonAppearance.ANDROID_PAY_DARK)
+//                                .setBuyButtonWidth(WalletFragmentStyle.Dimension.MATCH_PARENT);
+//
+//                        WalletFragmentOptions walletFragmentOptions = WalletFragmentOptions.newBuilder()
+//                                .setEnvironment(WalletConstants.ENVIRONMENT_TEST)
+//                                .setFragmentStyle(walletFragmentStyle)
+//                                .setTheme(WalletConstants.THEME_LIGHT)
+//                                .setMode(WalletFragmentMode.BUY_BUTTON)
+//                                .build();
+//
+//                        SupportWalletFragment mWalletFragment = SupportWalletFragment.newInstance(walletFragmentOptions);
+//
+//                        WalletFragmentInitParams.Builder startParamsBuilder =
+//                                WalletFragmentInitParams.newBuilder()
+//                                        .setMaskedWalletRequest(request)
+//                                        .setMaskedWalletRequestCode(REQUEST_CODE_MASKED_WALLET);
+//                        mWalletFragment.initialize(startParamsBuilder.build());
+//
+//                        // add Wallet fragment to the UI
+//                        getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.dynamic_wallet_button_fragment, mWalletFragment)
+//                                .commit();
+//
+//                        // show pay button
+//                    } else {
+//                        Toast.makeText(MainActivity.this, "failure", Toast.LENGTH_SHORT).show();
+//                        // show not pay button
+//                    }
+//                } else {
+//                    Toast.makeText(MainActivity.this, "wtf", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
 
 
 

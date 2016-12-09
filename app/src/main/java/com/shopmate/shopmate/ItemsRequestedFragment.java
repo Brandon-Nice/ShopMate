@@ -61,6 +61,7 @@ public class ItemsRequestedFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private GoogleApiClient payClient;
+
     final int REQUEST_CODE_MASKED_WALLET = 5;
     final int REQUEST_CODE_FULL_WALLET = 7;
 
