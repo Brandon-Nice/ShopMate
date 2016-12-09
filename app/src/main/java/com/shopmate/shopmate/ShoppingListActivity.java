@@ -359,7 +359,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             //Puts the price in for each item
             TextView listItemPrice = (TextView) view.findViewById(R.id.listItemPrice);
-            double price = ((double) items.get(position).getItem().get().getMaxPriceCents().get() / 100);
+            double price = ((double) items.get(position).getItem().get().getMaxPriceCents().or(0) / 100);
             listItemPrice.setText("Price: $" + Double.toString(price));
             return view;
         }
