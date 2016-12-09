@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.google.common.base.Optional;
 import com.shopmate.api.ShopMateService;
+import com.shopmate.api.net.NetShopMateService;
 import com.squareup.picasso.Picasso;
 import com.facebook.AccessToken;
 import com.google.common.util.concurrent.FutureCallback;
@@ -50,9 +51,9 @@ import java.util.logging.Logger;
 
 public class ShoppingListActivity extends AppCompatActivity {
 
+    NetShopMateService netShopMateService = new NetShopMateService();
     static final int ADD_ITEM_REQUEST = 1;
-
-    private ShoppingListItemAdapter sla;
+    private static ShoppingListItemAdapter sla;
     private Comparator<ShoppingListItemHandle> comparator = new PrioComparator();
     private UpdateListener updateListener;
     private long listId;
@@ -65,6 +66,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         final String title = extras.getString("title");
         listId = Long.parseLong(extras.getString("listId"));
+
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
@@ -253,7 +255,7 @@ public class ShoppingListActivity extends AppCompatActivity {
                 final ShoppingListItemBuilder bld = new ShoppingListItemBuilder(null)
                         .name(d.getStringExtra("item_name"))
                         .priority(convertPriority(d.getStringExtra("item_prio")))
-                        .imageUrl(d.getStringExtra("item_img"))
+                        .imageUrl(d.hasExtra("item_img") ? d.getStringExtra("item_img") : "")
                         .priority(convertPriority(d.getStringExtra("item_prio")))
                         .quantity(Integer.parseInt(d.getStringExtra("item_quan")))
                         .maxPriceCents(((int) price));
@@ -318,9 +320,16 @@ public class ShoppingListActivity extends AppCompatActivity {
             comparator = new PrioComparator();
             sla.sort(comparator);
             return true;
+        } else if (id == R.id.leave_list) {
+            netShopMateService.leaveListAsync(AccessToken.getCurrentAccessToken().getToken(), listId);
+            finish();
         } else if (id == R.id.share_button){
             //Open up an activity to select the friend who you want to share a list with
             Intent intent = new Intent(ShoppingListActivity.this, SharingListsActivity.class);
+            intent.putExtra("listId", listId);
+            startActivity(intent);
+        } else if (id == R.id.show_members) {
+            Intent intent = new Intent(this, ListMembersActivity.class);
             intent.putExtra("listId", listId);
             startActivity(intent);
         }
@@ -480,8 +489,13 @@ public class ShoppingListActivity extends AppCompatActivity {
             double price = ((double) items.get(position).getItem().get().getMaxPriceCents().or(0) / 100);
             holder.listItemPrice.setText("Price: $" + Double.toString(price));
 
-            ShoppingListItem item = items.get(position).getItem().get();
             return convertView;
+        }
+
+        @Override
+        public void clear() {
+            super.clear();
+            items.clear();
         }
     }
 }

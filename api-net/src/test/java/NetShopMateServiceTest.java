@@ -8,6 +8,7 @@ import com.shopmate.api.model.item.ShoppingListItemPriority;
 import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.list.ShoppingList;
 import com.shopmate.api.model.list.ShoppingListInvite;
+import com.shopmate.api.model.purchase.ShoppingItemPurchase;
 import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.api.model.result.CreateShoppingListResult;
 import com.shopmate.api.model.result.GetAllInvitesResult;
@@ -51,6 +52,9 @@ public class NetShopMateServiceTest {
     private static final int UpdateItemQuantity = 100;
     private static final int UpdateItemQuantityPurchased = 5;
     private static final ShoppingListItemPriority UpdateItemPriority = ShoppingListItemPriority.HIGH;
+
+    private static final int TestPurchasePrice = 1000;
+    private static final int TestPurchaseQuantity = 1;
 
     private ShopMateService service;
 
@@ -419,6 +423,149 @@ public class NetShopMateServiceTest {
         service.removeUserFromListAsync(TestToken, createdList.getId(), TestId2).get();
         list = service.getListAndItemsAsync(TestToken, createdList.getId()).get();
         Assert.assertFalse(list.getMemberIds().contains(TestId2));
+    }
+
+    @Test
+    public void testPurchasingItem() throws ExecutionException, InterruptedException {
+        // make sure test user 2 has an ID
+        service.getAllListsNoItemsAsync(TestToken2).get();
+
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+
+        ShoppingItemPurchase purchase = service.makePurchaseAsync(TestToken, createItemResult.getId(), TestId2, TestPurchasePrice, TestPurchaseQuantity).get();
+        Assert.assertEquals(purchase.getItemName(), testItem.getName());
+        Assert.assertEquals(purchase.getTotalPriceCents(), TestPurchasePrice);
+        Assert.assertEquals(purchase.getQuantity(), TestPurchaseQuantity);
+        Assert.assertEquals(purchase.getPurchaserId(), TestId);
+        Assert.assertEquals(purchase.getReceiverId(), TestId2);
+        Assert.assertEquals(purchase.isComplete(), false);
+    }
+
+    @Test
+    public void testSelfPurchase() throws ExecutionException, InterruptedException {
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+
+        ShoppingItemPurchase purchase = service.makePurchaseAsync(TestToken, createItemResult.getId(), TestId, TestPurchasePrice, TestPurchaseQuantity).get();
+        Assert.assertEquals(purchase.getItemName(), testItem.getName());
+        Assert.assertEquals(purchase.getTotalPriceCents(), TestPurchasePrice);
+        Assert.assertEquals(purchase.getQuantity(), TestPurchaseQuantity);
+        Assert.assertEquals(purchase.getPurchaserId(), TestId);
+        Assert.assertEquals(purchase.getReceiverId(), TestId);
+        Assert.assertEquals(purchase.isComplete(), true);
+    }
+
+    @Test
+    public void testMakingAndGettingPurchase() throws ExecutionException, InterruptedException {
+        // make sure test user 2 has an ID
+        service.getAllListsNoItemsAsync(TestToken2).get();
+
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+
+        ShoppingItemPurchase purchase = service.makePurchaseAsync(TestToken, createItemResult.getId(), TestId2, TestPurchasePrice, TestPurchaseQuantity).get();
+        Assert.assertEquals(purchase.getItemName(), testItem.getName());
+        Assert.assertEquals(purchase.getTotalPriceCents(), TestPurchasePrice);
+        Assert.assertEquals(purchase.getQuantity(), TestPurchaseQuantity);
+        Assert.assertEquals(purchase.getPurchaserId(), TestId);
+        Assert.assertEquals(purchase.getReceiverId(), TestId2);
+        Assert.assertEquals(purchase.isComplete(), false);
+
+        ShoppingItemPurchase gotPurchase = service.getPurchaseAsync(TestToken, purchase.getId()).get();
+        assertPurchasesEqual(purchase, gotPurchase);
+    }
+
+    @Test
+    public void testGettingAllPurchases() throws ExecutionException, InterruptedException {
+        // make sure test user 2 has an ID
+        service.getAllListsNoItemsAsync(TestToken2).get();
+
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+
+        ShoppingItemPurchase purchase1 = service.makePurchaseAsync(TestToken, createItemResult.getId(), TestId2, TestPurchasePrice, TestPurchaseQuantity).get();
+        ShoppingItemPurchase purchase2 = service.makePurchaseAsync(TestToken, createItemResult.getId(), TestId2, TestPurchasePrice, TestPurchaseQuantity).get();
+
+        ImmutableList<ShoppingItemPurchase> purchases = service.getAllPurchasesAsync(TestToken).get();
+        boolean found1 = false, found2 = false;
+        for (ShoppingItemPurchase purchase : purchases) {
+            if (purchase.getId() == purchase1.getId()) {
+                found1 = true;
+                assertPurchasesEqual(purchase, purchase1);
+            } else if (purchase.getId() == purchase2.getId()) {
+                found2 = true;
+                assertPurchasesEqual(purchase, purchase2);
+            }
+        }
+        Assert.assertTrue(found1);
+        Assert.assertTrue(found2);
+    }
+
+    @Test
+    public void testMakingAndCompletingPurchase() throws ExecutionException, InterruptedException {
+        // make sure test user 2 has an ID
+        service.getAllListsNoItemsAsync(TestToken2).get();
+
+        CreateShoppingListResult createListResult = service.createListAsync(TestToken, TestListName, ImmutableSet.<String>of()).get();
+        ShoppingListItem testItem = new ShoppingListItemBuilder(TestItemName)
+                .description(TestItemDescription)
+                .imageUrl(TestItemImage)
+                .maxPriceCents(TestItemPrice)
+                .quantity(TestItemQuantity)
+                .quantityPurchased(TestItemQuantityPurchased)
+                .priority(TestItemPriority)
+                .build();
+        CreateShoppingListItemResult createItemResult = service.createItemAsync(TestToken, createListResult.getId(), testItem).get();
+
+        ShoppingItemPurchase purchase = service.makePurchaseAsync(TestToken, createItemResult.getId(), TestId2, TestPurchasePrice, TestPurchaseQuantity).get();
+        Assert.assertFalse(purchase.isComplete());
+
+        service.completePurchaseAsync(TestToken2, purchase.getId()).get();
+        ShoppingItemPurchase updatedPurchase = service.getPurchaseAsync(TestToken, purchase.getId()).get();
+        Assert.assertTrue(updatedPurchase.isComplete());
+    }
+
+    private static void assertPurchasesEqual(ShoppingItemPurchase expected, ShoppingItemPurchase actual) {
+        Assert.assertEquals(expected.getId(), actual.getId());
+        Assert.assertEquals(expected.getItemName(), actual.getItemName());
+        Assert.assertEquals(expected.getTotalPriceCents(), actual.getTotalPriceCents());
+        Assert.assertEquals(expected.getQuantity(), actual.getQuantity());
+        Assert.assertEquals(expected.getPurchaserId(), actual.getPurchaserId());
+        Assert.assertEquals(expected.getReceiverId(), actual.getReceiverId());
+        Assert.assertEquals(expected.isComplete(), actual.isComplete());
     }
 
     private static int indexOfInviteById(ImmutableList<ShoppingListInvite> invites, long id) {

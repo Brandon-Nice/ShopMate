@@ -3,6 +3,7 @@ package com.shopmate.shopmate;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -30,12 +31,17 @@ import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.share.model.AppInviteContent;
 import com.facebook.share.widget.AppInviteDialog;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -63,6 +69,49 @@ public class MainActivity extends AppCompatActivity
 
     private UpdateListener updateListener;
     private ShoppingListAdapter shoppingLists;
+    private final ShopMateService service = ShopMateServiceProvider.get();
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("Main Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        client.disconnect();
+    }
 
     private class ShoppingListEntry {
         private final long id;
@@ -117,6 +166,8 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        FacebookSdk.sdkInitialize(getApplicationContext());
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -168,6 +219,7 @@ public class MainActivity extends AppCompatActivity
 
         shoppingLists = new ShoppingListAdapter(this, R.layout.rowlayout, new ArrayList<ShoppingListEntry>());
         listview.setAdapter(shoppingLists);
+
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -180,32 +232,10 @@ public class MainActivity extends AppCompatActivity
                 startActivity(i);
             }
         });
-        
-        final ShopMateService service = ShopMateServiceProvider.get();
-        String fbToken = AccessToken.getCurrentAccessToken().getToken();
-        Futures.addCallback(service.getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
-            @Override
-            public void onSuccess(GetAllShoppingListsResult result) {
-                final List<ShoppingListEntry> tmp = new ArrayList<>();
-                for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
-                    tmp.add(new ShoppingListEntry(i.getKey(), i.getValue()));
-                }
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        shoppingLists.addAll(tmp);
-                    }
-                });
-            }
+        UpdateShoppingLists();
 
-            @Override
-            public void onFailure(Throwable t) {
-                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
-            }
-        });
-
-        ((Button)findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
+        ((Button) findViewById(R.id.addNewListButton)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final String fbToken = AccessToken.getCurrentAccessToken().getToken();
@@ -304,6 +334,9 @@ public class MainActivity extends AppCompatActivity
             }
         });
         updateListener.register();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -333,6 +366,12 @@ public class MainActivity extends AppCompatActivity
     public boolean isLoggedIn() {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         return accessToken != null;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        UpdateShoppingLists();
     }
 
     @Override
@@ -405,6 +444,34 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void UpdateShoppingLists() {
+        final ListView listview = (ListView) findViewById(R.id.userlistView);
+        String fbToken = AccessToken.getCurrentAccessToken().getToken();
+
+        Futures.addCallback(service.getAllListsAndItemsAsync(fbToken), new FutureCallback<GetAllShoppingListsResult>() {
+            @Override
+            public void onSuccess(GetAllShoppingListsResult result) {
+                final List<ShoppingListEntry> tmp = new ArrayList<>();
+                for (Map.Entry<Long, ShoppingList> i : result.getLists().entrySet()) {
+                    tmp.add(new ShoppingListEntry(i.getKey(), i.getValue()));
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        shoppingLists.clear();
+                        shoppingLists.addAll(tmp);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Snackbar.make(listview, "defeat", Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     private int findShoppingList(long id) {
