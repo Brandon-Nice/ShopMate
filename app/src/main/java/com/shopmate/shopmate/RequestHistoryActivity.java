@@ -5,9 +5,12 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
@@ -23,64 +26,88 @@ import com.shopmate.shopmate.dummy.DummyContent;
 
 public class RequestHistoryActivity extends AppCompatActivity implements ItemsBoughtFragment.OnListFragmentInteractionListener, ItemsRequestedFragment.OnListFragmentInteractionListener, ItemsHistoryFragment.OnListFragmentInteractionListener{
 
-    RadioButton RB0;
-    RadioButton RB1;
-    RadioButton RB2;
-    ViewFlipper VF;
-    TextView title;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request_hist);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        title = (TextView)findViewById(R.id.reqTitle);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+        //title = (TextView)findViewById(R.id.reqTitle);
 
-         /*
-         * Find the views declared in main.xml.
-         */
-        RB0 = (RadioButton) findViewById(R.id.radio0);
-        RB1 = (RadioButton) findViewById(R.id.radio1);
-        RB2 = (RadioButton) findViewById(R.id.radio2);
-        VF = (ViewFlipper) findViewById(R.id.ViewFlipper01);
+        TabHost host = (TabHost)findViewById(R.id.tabHost);
+        host.setup();
 
-        /*
-         * Set a listener that will listen for clicks on the radio buttons and
-         * perform suitable actions.
-         */
-        RB0.setOnClickListener(radio_listener);
-        RB1.setOnClickListener(radio_listener);
-        RB2.setOnClickListener(radio_listener);
+        //Tab 1
+        final TabHost.TabSpec spec1 = host.newTabSpec("Tab One");
+        spec1.setContent(R.id.tab1);
+        spec1.setIndicator("My Requests");
+        host.addTab(spec1);
+
+
+        //Tab 2
+        final TabHost.TabSpec spec2 = host.newTabSpec("Tab Two");
+        spec2.setContent(R.id.tab2);
+        spec2.setIndicator("My History");
+        host.addTab(spec2);
+
+        //Set the layout to be "Items Requested" as default
+        ItemsRequestedFragment frag = new ItemsRequestedFragment();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(android.R.id.tabcontent, frag);
+        ft.commit();
+
+        //Set a listener to detect when a tab has been pressed
+        host.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String s) {
+                if(spec1.getTag().equals(s)){ //if tab1 was pressed
+                    System.out.println("Case 1");
+                    //Remove all views before replacing the fragment
+                    FrameLayout fl2 = (FrameLayout) findViewById(android.R.id.tabcontent);
+                    fl2.removeAllViews();
+
+                    ItemsRequestedFragment fragment2 = new ItemsRequestedFragment();
+                    FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
+                    ft2.replace(android.R.id.tabcontent, fragment2);
+                    ft2.commit();
+                }
+                if(spec2.getTag().equals(s)){ //if tab2 was pressed
+                    System.out.println("Case 2");
+                    //Remove all views before replacing the fragment
+                    FrameLayout fl3 = (FrameLayout) findViewById(android.R.id.tabcontent);
+                    fl3.removeAllViews();
+
+                    ItemsHistoryFragment fragment3 = new ItemsHistoryFragment();
+                    FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
+                    ft3.replace(android.R.id.tabcontent, fragment3);
+                    ft3.commit();
+                }
+            }
+        });
 
     }
 
-    /*
-     * Define a OnClickListener that will change which view that is displayed by
-     * the ViewFlipper
-     */
-    private View.OnClickListener radio_listener = new View.OnClickListener() {
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.radio0:
-                    //VF.setDisplayedChild(0); used to display text at the bottom - we don't need this
-                    title.setText("My Items Bought");
-                    changeFragment(0);
-                    //bListener
-                    break;
-                case R.id.radio1:
-                    //VF.setDisplayedChild(1);
-                    title.setText("My Requests");
-                    changeFragment(1);
-                    break;
-                case R.id.radio2:
-                    //VF.setDisplayedChild(2);
-                    title.setText("My History");
-                    changeFragment(2);
-                    break;
-            }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+       // getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
         }
-    };
+
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
@@ -89,41 +116,41 @@ public class RequestHistoryActivity extends AppCompatActivity implements ItemsBo
 
     @Override
     public void changeFragment(int id) {
-        switch (id) {
-            case 0: //My items bought activity
-                System.out.println("Case 0");
-                //Remove all views before replacing the fragment
-                FrameLayout fl1 = (FrameLayout) findViewById(R.id.fragment_layout);
-                fl1.removeAllViews();
-
-                ItemsBoughtFragment fragment1 = new ItemsBoughtFragment();
-                FragmentTransaction ft1 = getSupportFragmentManager().beginTransaction();
-                ft1.replace(R.id.fragment_layout, fragment1);
-                ft1.commit();
-                break;
-            case 1: //My requests activity
-                System.out.println("Case 1");
-                //Remove all views before replacing the fragment
-                FrameLayout fl2 = (FrameLayout) findViewById(R.id.fragment_layout);
-                fl2.removeAllViews();
-
-                ItemsRequestedFragment fragment2 = new ItemsRequestedFragment();
-                FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
-                ft2.replace(R.id.fragment_layout, fragment2);
-                ft2.commit();
-                break;
-            case 2: //My history activity
-                System.out.println("Case 3");
-                //Remove all views before replacing the fragment
-                FrameLayout fl3 = (FrameLayout) findViewById(R.id.fragment_layout);
-                fl3.removeAllViews();
-
-                ItemsHistoryFragment fragment3 = new ItemsHistoryFragment();
-                FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
-                ft3.replace(R.id.fragment_layout, fragment3);
-                ft3.commit();
-                break;
-            //default:
-        }
+//        switch (id) {
+//            case 0: //My items bought activity
+//                System.out.println("Case 0");
+//                //Remove all views before replacing the fragment
+//                FrameLayout fl1 = (FrameLayout) findViewById(R.id.fragment_layout);
+//                fl1.removeAllViews();
+//
+//                ItemsBoughtFragment fragment1 = new ItemsBoughtFragment();
+//                FragmentTransaction ft1 = getSupportFragmentManager().beginTransaction();
+//                ft1.replace(R.id.fragment_layout, fragment1);
+//                ft1.commit();
+//                break;
+//            case 1: //My requests activity
+//                System.out.println("Case 1");
+//                //Remove all views before replacing the fragment
+//                FrameLayout fl2 = (FrameLayout) findViewById(R.id.fragment_layout);
+//                fl2.removeAllViews();
+//
+//                ItemsRequestedFragment fragment2 = new ItemsRequestedFragment();
+//                FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
+//                ft2.replace(R.id.fragment_layout, fragment2);
+//                ft2.commit();
+//                break;
+//            case 2: //My history activity
+//                System.out.println("Case 3");
+//                //Remove all views before replacing the fragment
+//                FrameLayout fl3 = (FrameLayout) findViewById(R.id.fragment_layout);
+//                fl3.removeAllViews();
+//
+//                ItemsHistoryFragment fragment3 = new ItemsHistoryFragment();
+//                FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
+//                ft3.replace(R.id.fragment_layout, fragment3);
+//                ft3.commit();
+//                break;
+//            //default:
+//        }
     }
 }
