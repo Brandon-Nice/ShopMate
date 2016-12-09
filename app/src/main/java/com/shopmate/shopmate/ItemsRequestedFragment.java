@@ -72,6 +72,7 @@ public class ItemsRequestedFragment extends Fragment {
             }
             recyclerView.setAdapter(new ItemsRequestedRecyclerViewAdapter(DummyContent.ITEMS, mListener));
         }
+
         return view;
     }
 
