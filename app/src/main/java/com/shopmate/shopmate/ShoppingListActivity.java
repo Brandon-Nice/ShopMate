@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.google.common.base.Optional;
 import com.shopmate.api.ShopMateService;
+import com.shopmate.api.model.item.ShoppingListItemUpdate;
 import com.shopmate.api.model.purchase.ShoppingItemPurchase;
 import com.shopmate.api.net.NetShopMateService;
 import com.squareup.picasso.Picasso;
@@ -121,6 +122,9 @@ public class ShoppingListActivity extends AppCompatActivity {
                 if (buy) { // buy some items
                     for (Map.Entry<Long, ShoppingListItemAdapter.State> s: entries) {
                         if (s.getValue().quantity > 0) { //hold on to your butts, we're buying snakes in a plane!
+                            final ShoppingListItem buyItem = s.getValue().item;
+                            final Long buyId = s.getKey();
+                            final int buyQuant = s.getValue().quantity;
                             Futures.addCallback(ShopMateServiceProvider.get().makePurchaseAsync(
                                     AccessToken.getCurrentAccessToken().getToken(),
                                     s.getKey(),
@@ -130,11 +134,34 @@ public class ShoppingListActivity extends AppCompatActivity {
                             ), new FutureCallback<ShoppingItemPurchase>() {
                                 @Override
                                 public void onSuccess(ShoppingItemPurchase result) {
+                                    ShoppingListItemUpdate up = new ShoppingListItemUpdate(
+                                            Optional.<String>absent(),
+                                            Optional.<String>absent(),
+                                            Optional.<Optional<String>>absent(),
+                                            Optional.<Optional<Integer>>absent(),
+                                            Optional.of(buyItem.getQuantity() - buyQuant),
+                                            0,
+                                            Optional.<ShoppingListItemPriority>absent());
+                                    Futures.addCallback(ShopMateServiceProvider.get().updateItemAsync(
+                                            AccessToken.getCurrentAccessToken().getToken(),
+                                            buyId,
+                                            up
+                                    ), new FutureCallback<ShoppingListItem>() {
+                                        @Override
+                                        public void onSuccess(ShoppingListItem result) {
+                                            return;
+                                        }
+
+                                        @Override
+                                        public void onFailure(Throwable t) {
+                                            return;
+                                        }
+                                    });
                                      // TODO remove the item from the list if it's completely bought, I think
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Toast.makeText(ShoppingListActivity.this, "everything went horribly right!", Toast.LENGTH_LONG).show();
+                                            Toast.makeText(ShoppingListActivity.this, "item bought", Toast.LENGTH_LONG).show();
                                         }
                                     });
 
@@ -143,7 +170,12 @@ public class ShoppingListActivity extends AppCompatActivity {
                                 @Override
                                 public void onFailure(Throwable t) {
                                     //TODO something here?
-                                    Toast.makeText(ShoppingListActivity.this, "something went wrong", Toast.LENGTH_SHORT).show();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(ShoppingListActivity.this, "something went wrong", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                 }
                             });
                         }
