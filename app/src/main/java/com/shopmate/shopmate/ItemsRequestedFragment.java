@@ -59,10 +59,7 @@ public class ItemsRequestedFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
-    private GoogleApiClient payClient;
 
-    final int REQUEST_CODE_MASKED_WALLET = 5;
-    final int REQUEST_CODE_FULL_WALLET = 7;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -107,128 +104,10 @@ public class ItemsRequestedFragment extends Fragment {
             List<ShoppingItemPurchase> items = new ArrayList<ShoppingItemPurchase>();
             recyclerView.setAdapter(new ItemsRequestedRecyclerViewAdapter(items, mListener));
 
-            payClient = new GoogleApiClient.Builder(getContext())
-                    .addApi(Wallet.API,
-                            new Wallet.WalletOptions.Builder()
-                                    .setEnvironment(WalletConstants.ENVIRONMENT_TEST)
-                                    .build())
-                    .build();
-            Toast.makeText(getContext(), "starting", Toast.LENGTH_SHORT).show();
-            payClient.connect();
-            Wallet.Payments.isReadyToPay(payClient, IsReadyToPayRequest.newBuilder().build())
-                    .setResultCallback(new ResultCallback<BooleanResult>() {
-                        @Override
-                        public void onResult(@NonNull BooleanResult booleanResult) {
-                            if (booleanResult.getStatus().isSuccess()) {
-                                if (booleanResult.getValue()) {
-                                    Toast.makeText(getContext(), "success", Toast.LENGTH_SHORT).show();
 
-                                    PaymentMethodTokenizationParameters parameters = PaymentMethodTokenizationParameters.newBuilder()
-                                            .setPaymentMethodTokenizationType(PaymentMethodTokenizationType.NETWORK_TOKEN)
-                                            .addParameter("publicKey", "BO39Rh43UGXMQy5PAWWe7UGWd2a9YRjNLPEEVe+zWIbdIgALcDcnYCuHbmrrzl7h8FZjl6RCzoi5/cDrqXNRVSo=")
-                                            .build();
-                                    MaskedWalletRequest request = MaskedWalletRequest.newBuilder()
-                                            .setCurrencyCode("USD")
-                                            .setEstimatedTotalPrice("15.00")
-                                            .setPaymentMethodTokenizationParameters(parameters)
-                                            .build();
-                                    WalletFragmentStyle walletFragmentStyle = new WalletFragmentStyle()
-                                            .setBuyButtonText(WalletFragmentStyle.BuyButtonText.BUY_WITH)
-                                            .setBuyButtonAppearance(WalletFragmentStyle.BuyButtonAppearance.ANDROID_PAY_DARK)
-                                            .setBuyButtonWidth(WalletFragmentStyle.Dimension.MATCH_PARENT);
-
-                                    WalletFragmentOptions walletFragmentOptions = WalletFragmentOptions.newBuilder()
-                                            .setEnvironment(WalletConstants.ENVIRONMENT_TEST)
-                                            .setFragmentStyle(walletFragmentStyle)
-                                            .setTheme(WalletConstants.THEME_LIGHT)
-                                            .setMode(WalletFragmentMode.BUY_BUTTON)
-                                            .build();
-
-                                    SupportWalletFragment mWalletFragment = SupportWalletFragment.newInstance(walletFragmentOptions);
-
-                                    WalletFragmentInitParams.Builder startParamsBuilder =
-                                            WalletFragmentInitParams.newBuilder()
-                                                    .setMaskedWalletRequest(request)
-                                                    .setMaskedWalletRequestCode(REQUEST_CODE_MASKED_WALLET);
-                                    mWalletFragment.initialize(startParamsBuilder.build());
-
-                                    // add Wallet fragment to the UI
-                                    getFragmentManager().beginTransaction()
-                                            .replace(R.id.acceptreq, mWalletFragment)
-                                            .commit();
-
-                                    // show pay button
-                                } else {
-                                    Toast.makeText(getContext(), "failure", Toast.LENGTH_SHORT).show();
-                                    // show not pay button
-                                }
-                            } else {
-                                Toast.makeText(getContext(), "wtf", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
         }
 
         return view;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_MASKED_WALLET:
-                if (resultCode == RESULT_OK) {
-                    MaskedWallet maskedWallet = data.getParcelableExtra(WalletConstants.EXTRA_MASKED_WALLET);
-                    Log.d("things", maskedWallet.getEmail());
-                    String googleTransactionId = maskedWallet.getGoogleTransactionId();
-
-                    TextView txt = new TextView(getContext());
-                    txt.setText("You are approving a transaction of $15.00");
-                    final FullWalletRequest request = FullWalletRequest.newBuilder()
-                            .setGoogleTransactionId(googleTransactionId)
-                            .setCart(Cart.newBuilder()
-                                    .setCurrencyCode("USD")
-                                    .setTotalPrice("15.00")
-                                    .addLineItem(LineItem.newBuilder()
-                                            .setDescription("a thingy")
-                                            .setQuantity("1")
-                                            .setUnitPrice("15.00")
-                                            .setTotalPrice("15.00")
-                                            .setCurrencyCode("USD")
-                                            .build()
-                                    )
-                                    .build())
-                            .build();
-                    new AlertDialog.Builder(getContext())
-                            .setTitle("Are you sure?")
-                            .setView(txt)
-                            .setPositiveButton("Accept", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Wallet.Payments.loadFullWallet(payClient, request, REQUEST_CODE_FULL_WALLET);
-                                }
-                            })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    return;
-                                }
-                            })
-                            .show();
-                }
-                break;
-            case WalletConstants.RESULT_ERROR:
-                Log.d("things", Integer.toString(data.getIntExtra(WalletConstants.EXTRA_ERROR_CODE, -1)));
-                break;
-            case REQUEST_CODE_FULL_WALLET:
-                if (resultCode == RESULT_OK) {
-                    Log.d("things", "it worked");
-                } else {
-                    Log.d("things", "it didn't work");
-                }
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
-        }
     }
 
     @Override
