@@ -95,12 +95,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="This is tab 1" />
-
                 </LinearLayout>
 
                 <LinearLayout
@@ -108,11 +102,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="This is tab 2" />
                 </LinearLayout>
             </FrameLayout>
         </LinearLayout>

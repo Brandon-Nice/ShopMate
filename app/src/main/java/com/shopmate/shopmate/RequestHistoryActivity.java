@@ -26,12 +26,6 @@ import com.shopmate.shopmate.dummy.DummyContent;
 
 public class RequestHistoryActivity extends AppCompatActivity implements ItemsBoughtFragment.OnListFragmentInteractionListener, ItemsRequestedFragment.OnListFragmentInteractionListener, ItemsHistoryFragment.OnListFragmentInteractionListener{
 
-    RadioButton RB0;
-    RadioButton RB1;
-    RadioButton RB2;
-    ViewFlipper VF;
-    TextView title;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,39 +38,52 @@ public class RequestHistoryActivity extends AppCompatActivity implements ItemsBo
         host.setup();
 
         //Tab 1
-        TabHost.TabSpec spec = host.newTabSpec("Tab One");
-        spec.setContent(R.id.tab1);
-        spec.setIndicator("My Requests");
-        host.addTab(spec);
+        final TabHost.TabSpec spec1 = host.newTabSpec("Tab One");
+        spec1.setContent(R.id.tab1);
+        spec1.setIndicator("My Requests");
+        host.addTab(spec1);
+
 
         //Tab 2
-        spec = host.newTabSpec("Tab Two");
-        spec.setContent(R.id.tab2);
-        spec.setIndicator("My History");
-        host.addTab(spec);
+        final TabHost.TabSpec spec2 = host.newTabSpec("Tab Two");
+        spec2.setContent(R.id.tab2);
+        spec2.setIndicator("My History");
+        host.addTab(spec2);
 
-        //Tab 3
-//        spec = host.newTabSpec("Tab Three");
-//        spec.setContent(R.id.tab3);
-//        spec.setIndicator("Tab Three");
-//        host.addTab(spec);
+        //Set the layout to be "Items Requested" as default
+        ItemsRequestedFragment frag = new ItemsRequestedFragment();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(android.R.id.tabcontent, frag);
+        ft.commit();
 
+        //Set a listener to detect when a tab has been pressed
+        host.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String s) {
+                if(spec1.getTag().equals(s)){ //if tab1 was pressed
+                    System.out.println("Case 1");
+                    //Remove all views before replacing the fragment
+                    FrameLayout fl2 = (FrameLayout) findViewById(android.R.id.tabcontent);
+                    fl2.removeAllViews();
 
-         /*
-         * Find the views declared in main.xml.
-         */
-//        RB0 = (RadioButton) findViewById(R.id.radio0);
-//        RB1 = (RadioButton) findViewById(R.id.radio1);
-//        RB2 = (RadioButton) findViewById(R.id.radio2);
-//        VF = (ViewFlipper) findViewById(R.id.ViewFlipper01);
+                    ItemsRequestedFragment fragment2 = new ItemsRequestedFragment();
+                    FragmentTransaction ft2 = getSupportFragmentManager().beginTransaction();
+                    ft2.replace(android.R.id.tabcontent, fragment2);
+                    ft2.commit();
+                }
+                if(spec2.getTag().equals(s)){ //if tab2 was pressed
+                    System.out.println("Case 2");
+                    //Remove all views before replacing the fragment
+                    FrameLayout fl3 = (FrameLayout) findViewById(android.R.id.tabcontent);
+                    fl3.removeAllViews();
 
-        /*
-         * Set a listener that will listen for clicks on the radio buttons and
-         * perform suitable actions.
-         */
-//        RB0.setOnClickListener(radio_listener);
-//        RB1.setOnClickListener(radio_listener);
-//        RB2.setOnClickListener(radio_listener);
+                    ItemsHistoryFragment fragment3 = new ItemsHistoryFragment();
+                    FragmentTransaction ft3 = getSupportFragmentManager().beginTransaction();
+                    ft3.replace(android.R.id.tabcontent, fragment3);
+                    ft3.commit();
+                }
+            }
+        });
 
     }
 
@@ -101,34 +108,6 @@ public class RequestHistoryActivity extends AppCompatActivity implements ItemsBo
 
         return super.onOptionsItemSelected(item);
     }
-
-
-    /*
-     * Define a OnClickListener that will change which view that is displayed by
-     * the ViewFlipper
-     */
-//    private View.OnClickListener radio_listener = new View.OnClickListener() {
-//        public void onClick(View v) {
-//            switch (v.getId()) {
-//                case R.id.radio0:
-//                    //VF.setDisplayedChild(0); used to display text at the bottom - we don't need this
-//                    title.setText("My Items Bought");
-//                    changeFragment(0);
-//                    //bListener
-//                    break;
-//                case R.id.radio1:
-//                    //VF.setDisplayedChild(1);
-//                    title.setText("My Requests");
-//                    changeFragment(1);
-//                    break;
-//                case R.id.radio2:
-//                    //VF.setDisplayedChild(2);
-//                    title.setText("My History");
-//                    changeFragment(2);
-//                    break;
-//            }
-//        }
-//    };
 
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
