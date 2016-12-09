@@ -1,13 +1,16 @@
 package com.shopmate.shopmate;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,9 +19,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.common.base.Optional;
 import com.shopmate.api.ShopMateService;
@@ -39,6 +44,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 
@@ -97,13 +103,25 @@ public class ShoppingListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO Either bring user to new item activity or allow user to enter item info here
-                Intent i = new Intent(view.getContext(), AddItemActivity.class);
-                Bundle extras = new Bundle();
-                extras.putString("title", title);
-                extras.putString("listId", Long.toString(listId));
-                i.putExtras(extras);
-                startActivityForResult(i, ADD_ITEM_REQUEST);
+                boolean buy = false;
+                HashMap<Long, ShoppingListItemAdapter.State> stateMap = sla.getStateMap();
+                for (Map.Entry<Long, ShoppingListItemAdapter.State> s : stateMap.entrySet()) {
+                    if (s.getValue().quantity > 0) {
+                        buy = true;
+                        break;
+                    }
+                }
+                if (buy) { // buy some items
+                    // TODO buy items
+                    Toast.makeText(ShoppingListActivity.this, "will be buying these", Toast.LENGTH_SHORT).show();
+                } else { // add shopping list item
+                    Intent i = new Intent(view.getContext(), AddItemActivity.class);
+                    Bundle extras = new Bundle();
+                    extras.putString("title", title);
+                    extras.putString("listId", Long.toString(listId));
+                    i.putExtras(extras);
+                    startActivityForResult(i, ADD_ITEM_REQUEST);
+                }
             }
         });
 
@@ -316,6 +334,10 @@ public class ShoppingListActivity extends AppCompatActivity {
         private int layout;
         private HashMap<Long, State> stateMap;
 
+        public HashMap<Long, State> getStateMap() {
+            return stateMap;
+        }
+
         ShoppingListItemAdapter(Context context, int resourceId, List<ShoppingListItemHandle> items) {
             super(context, resourceId, items);
             this.items = items;
@@ -323,28 +345,30 @@ public class ShoppingListActivity extends AppCompatActivity {
             this.layout = resourceId;
             this.stateMap = new HashMap<Long, State>();
             for (ShoppingListItemHandle i : items) {
-                stateMap.put(i.getId(), new State(false));
+                stateMap.put(i.getId(), new State(0, i.getItem().get()));
             }
         }
 
         @Override
         public void add(ShoppingListItemHandle object) {
             super.add(object);
-            stateMap.put(object.getId(), new State(false));
+            stateMap.put(object.getId(), new State(0, object.getItem().get()));
         }
 
         @Override
         public void addAll(Collection<? extends ShoppingListItemHandle> collection) {
             super.addAll(collection);
             for (ShoppingListItemHandle i : collection) {
-                stateMap.put(i.getId(), new State(false));
+                stateMap.put(i.getId(), new State(0, i.getItem().get()));
             }
         }
 
         class State {
-            public boolean checked;
-            public State(boolean checked) {
-                this.checked = checked;
+            public int quantity;
+            public ShoppingListItem item;
+            public State(int quantity, ShoppingListItem item) {
+                this.quantity = quantity;
+                this.item = item;
             }
         }
 
@@ -363,13 +387,57 @@ public class ShoppingListActivity extends AppCompatActivity {
                 convertView = View.inflate(context, layout, null);
                 holder = new ViewHolder();
                 holder.checkBox = (CheckBox) convertView.findViewById(R.id.itemCheckBox);
-                holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                holder.checkBox.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        Long id = (Long) buttonView.getTag();
-                        stateMap.get(id).checked = isChecked;
+                    public void onClick(View v) {
+                        final CheckBox chk = (CheckBox) v;
+                        final Long id = (Long) v.getTag();
+                        final ShoppingListItem item = stateMap.get(id).item;
+                        if (item.getQuantity() - item.getQuantityPurchased() > 1) { // need to open dialog
+                            final EditText txt = new EditText(ShoppingListActivity.this);
+                            txt.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            if (stateMap.get(id).quantity > 0) { // already has a value
+                                txt.setText(Integer.toString(stateMap.get(id).quantity));
+                            }
+                            new AlertDialog.Builder(ShoppingListActivity.this)
+                                    .setTitle("How many?")
+                                    .setView(txt)
+                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            String q_str = txt.getText().toString();
+                                            if (q_str.length() == 0 || Integer.parseInt(q_str) <= 0) { // unselecting
+                                                chk.setChecked(false);
+                                                stateMap.get(id).quantity = 0;
+                                                Log.d("things", id.toString() + ": now has quantity " + Integer.toString(stateMap.get(id).quantity));
+                                            } else { // changing selection number
+                                                // TODO bound the value (can't buy 500 when only need 5)
+                                                chk.setChecked(true);
+                                                stateMap.get(id).quantity = Integer.parseInt(q_str);
+                                                Log.d("things", id.toString() + ": now has quantity " + Integer.toString(stateMap.get(id).quantity));
+                                            }
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            chk.setChecked(!chk.isChecked()); // reverse the checking motion
+                                            Log.d("things", id.toString() + ": now has quantity " + Integer.toString(stateMap.get(id).quantity));
+                                        }
+                                    })
+                                    .show();
+                        } else {
+                            if (chk.isChecked()) { // now checked
+                                stateMap.get(id).quantity = 1;
+                                Log.d("things", id.toString() + ": now has quantity " + Integer.toString(stateMap.get(id).quantity));
+                            } else { // now unchecked
+                                stateMap.get(id).quantity = 0;
+                                Log.d("things", id.toString() + ": now has quantity " + Integer.toString(stateMap.get(id).quantity));
+                            }
+                        }
                     }
                 });
+
                 holder.imageView = (ImageView) convertView.findViewById(R.id.itemImageView);
                 holder.listItemQuantity = (TextView) convertView.findViewById(R.id.listItemQuantity);
                 holder.listItemPrice = (TextView) convertView.findViewById(R.id.listItemPrice);
@@ -378,7 +446,7 @@ public class ShoppingListActivity extends AppCompatActivity {
                 holder = (ViewHolder) convertView.getTag();
             }
             holder.checkBox.setTag(items.get(position).getId()); // so that the checkbox can check the right entry in the StateMap
-            holder.checkBox.setChecked(stateMap.get(items.get(position).getId()).checked);
+            holder.checkBox.setChecked(stateMap.get(items.get(position).getId()).quantity > 0);
 
             String itemName = items.get(position).getItem().get().getName();
 
