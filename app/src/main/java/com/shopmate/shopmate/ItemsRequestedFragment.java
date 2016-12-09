@@ -11,9 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.common.collect.ImmutableList;
+import com.shopmate.api.model.purchase.ShoppingItemPurchase;
 import com.shopmate.shopmate.dummy.DummyContent;
 import com.shopmate.shopmate.dummy.DummyContent.DummyItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -70,7 +73,8 @@ public class ItemsRequestedFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new ItemsRequestedRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            List<ShoppingItemPurchase> items = new ArrayList<ShoppingItemPurchase>();
+            recyclerView.setAdapter(new ItemsRequestedRecyclerViewAdapter(items, mListener));
         }
 
         return view;
@@ -106,7 +110,7 @@ public class ItemsRequestedFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(ShoppingItemPurchase item);
         void changeFragment(int id); //changes the fragment based on id
     }
 }

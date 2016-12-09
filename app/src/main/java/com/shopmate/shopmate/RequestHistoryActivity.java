@@ -14,6 +14,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
+import com.shopmate.api.model.purchase.ShoppingItemPurchase;
 import com.shopmate.shopmate.dummy.DummyContent;
 
 /**
@@ -24,7 +25,7 @@ import com.shopmate.shopmate.dummy.DummyContent;
  * Created by menane on 11/15/2016.
  **/
 
-public class RequestHistoryActivity extends AppCompatActivity implements ItemsBoughtFragment.OnListFragmentInteractionListener, ItemsRequestedFragment.OnListFragmentInteractionListener, ItemsHistoryFragment.OnListFragmentInteractionListener{
+public class RequestHistoryActivity extends AppCompatActivity implements ItemsRequestedFragment.OnListFragmentInteractionListener, ItemsHistoryFragment.OnListFragmentInteractionListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +111,14 @@ public class RequestHistoryActivity extends AppCompatActivity implements ItemsBo
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(ShoppingItemPurchase item) {
         //do nothing yet. TODO: Add interaction shiz here...
+    }
+
+    //for history - TODO: change it for shopping items
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
     }
 
     @Override

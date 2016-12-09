@@ -1,3 +1,4 @@
+
 package com.shopmate.shopmate;
 
 import android.support.v7.widget.RecyclerView;
@@ -6,9 +7,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.facebook.AccessToken;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.shopmate.api.ShopMateService;
+import com.shopmate.api.ShopMateServiceProvider;
+import com.shopmate.api.model.purchase.ShoppingItemPurchase;
+import com.shopmate.api.model.result.CreateShoppingListItemResult;
 import com.shopmate.shopmate.ItemsRequestedFragment.OnListFragmentInteractionListener;
 import com.shopmate.shopmate.dummy.DummyContent.DummyItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,12 +29,42 @@ import java.util.List;
  */
 public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<ItemsRequestedRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private List<ShoppingItemPurchase> mValues;
     private final OnListFragmentInteractionListener mListener;
+    private final ListenableFuture<ImmutableList<ShoppingItemPurchase>> future; //contains list of item purchases
+    private int index;
 
-    public ItemsRequestedRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public ItemsRequestedRecyclerViewAdapter(List<ShoppingItemPurchase> items, OnListFragmentInteractionListener listener) {
         mValues = items; //contains the dummy values
         mListener = listener; //contains the listener that interacts with those values
+
+        final String fbToken = AccessToken.getCurrentAccessToken().getToken();
+        ShopMateService service = ShopMateServiceProvider.get();
+        future = service.getAllPurchasesAsync(fbToken);
+        //make API call to get the actual data from server
+        Futures.addCallback(future, new FutureCallback<ImmutableList<ShoppingItemPurchase>>() {
+            @Override
+            public void onSuccess(ImmutableList<ShoppingItemPurchase> result) {
+                //ImmutableList<ImmutableList<ShoppingItemPurchase>> items = new <ImmutableList<ShoppingItemPurchase>>();
+                //items = result;
+                //filter out these results from the result obj
+                List<ShoppingItemPurchase> filtereditems = new ArrayList<ShoppingItemPurchase>();
+                for(ShoppingItemPurchase r : result){
+                    if(!r.isComplete() && (r.getReceiverId().equals(AccessToken.getCurrentAccessToken().getUserId()))){
+                        filtereditems.add(r);
+                    }
+                }
+                mValues = filtereditems;
+
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+
+        index = 0;
     }
 
     @Override
@@ -36,12 +77,14 @@ public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<Item
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
+        //index++;
         //holder.fromView.setText("Items Bought: " + mValues.get(position).id);
         //holder.mContentView.setText(mValues.get(position).content);
-        holder.fromView.setText("From: Me");
-        holder.itemNameView.setText("Item Name: Pizza");
-        holder.itemPriceView.setText("Item Price: $5.00");
-        holder.itemQtyView.setText("Item Quantity: 5");
+
+        holder.fromView.setText("From: " + holder.mItem.getPurchaserId());
+        holder.itemNameView.setText("Item Name: " + holder.mItem.getItemName());
+        holder.itemPriceView.setText("Item Price: " + holder.mItem.getTotalPriceCents());
+        holder.itemQtyView.setText("Item Quantity: " + holder.mItem.getQuantity());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,7 +109,7 @@ public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<Item
         public final TextView itemNameView;
         public final TextView itemPriceView;
         public final TextView itemQtyView;
-        public DummyItem mItem;
+        public ShoppingItemPurchase mItem;
 
         public ViewHolder(View view) {
             super(view);
