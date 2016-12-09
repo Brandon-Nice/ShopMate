@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.google.common.base.Optional;
 import com.shopmate.api.ShopMateService;
+import com.shopmate.api.model.purchase.ShoppingItemPurchase;
 import com.shopmate.api.net.NetShopMateService;
 import com.squareup.picasso.Picasso;
 import com.facebook.AccessToken;
@@ -46,6 +47,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 
@@ -57,6 +59,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     private Comparator<ShoppingListItemHandle> comparator = new PrioComparator();
     private UpdateListener updateListener;
     private long listId;
+    private String listOwner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +69,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         final String title = extras.getString("title");
         listId = Long.parseLong(extras.getString("listId"));
+        listOwner = extras.getString("listOwner");
 
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
@@ -107,15 +111,43 @@ public class ShoppingListActivity extends AppCompatActivity {
             public void onClick(View view) {
                 boolean buy = false;
                 HashMap<Long, ShoppingListItemAdapter.State> stateMap = sla.getStateMap();
-                for (Map.Entry<Long, ShoppingListItemAdapter.State> s : stateMap.entrySet()) {
+                Set<Map.Entry<Long, ShoppingListItemAdapter.State>> entries = stateMap.entrySet();
+                for (Map.Entry<Long, ShoppingListItemAdapter.State> s : entries) {
                     if (s.getValue().quantity > 0) {
                         buy = true;
                         break;
                     }
                 }
                 if (buy) { // buy some items
-                    // TODO buy items
-                    Toast.makeText(ShoppingListActivity.this, "will be buying these", Toast.LENGTH_SHORT).show();
+                    for (Map.Entry<Long, ShoppingListItemAdapter.State> s: entries) {
+                        if (s.getValue().quantity > 0) { //hold on to your butts, we're buying snakes in a plane!
+                            Futures.addCallback(ShopMateServiceProvider.get().makePurchaseAsync(
+                                    AccessToken.getCurrentAccessToken().getToken(),
+                                    s.getKey(),
+                                    listOwner,
+                                    s.getValue().item.getMaxPriceCents().or(0) * s.getValue().quantity,
+                                    s.getValue().quantity
+                            ), new FutureCallback<ShoppingItemPurchase>() {
+                                @Override
+                                public void onSuccess(ShoppingItemPurchase result) {
+                                     // TODO remove the item from the list if it's completely bought, I think
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(ShoppingListActivity.this, "everything went horribly right!", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+                                    //TODO something here?
+                                    Toast.makeText(ShoppingListActivity.this, "something went wrong", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
                 } else { // add shopping list item
                     Intent i = new Intent(view.getContext(), AddItemActivity.class);
                     Bundle extras = new Bundle();
@@ -420,9 +452,14 @@ public class ShoppingListActivity extends AppCompatActivity {
                                                 stateMap.get(id).quantity = 0;
                                                 Log.d("things", id.toString() + ": now has quantity " + Integer.toString(stateMap.get(id).quantity));
                                             } else { // changing selection number
-                                                // TODO bound the value (can't buy 500 when only need 5)
+                                                int want = Integer.parseInt(q_str);
+                                                int need = stateMap.get(id).item.getQuantity() - stateMap.get(id).item.getQuantityPurchased();
                                                 chk.setChecked(true);
-                                                stateMap.get(id).quantity = Integer.parseInt(q_str);
+                                                if (want > need) { // want more than we need
+                                                    stateMap.get(id).quantity = need;
+                                                } else { // we can want this much
+                                                    stateMap.get(id).quantity = want;
+                                                }
                                                 Log.d("things", id.toString() + ": now has quantity " + Integer.toString(stateMap.get(id).quantity));
                                             }
                                         }

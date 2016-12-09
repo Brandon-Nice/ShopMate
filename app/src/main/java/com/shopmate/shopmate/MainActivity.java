@@ -228,6 +228,7 @@ public class MainActivity extends AppCompatActivity
                 ShoppingListEntry entry = (ShoppingListEntry) parent.getItemAtPosition(position);
                 extras.putString("title", entry.getList().getTitle());
                 extras.putString("listId", Long.toString(entry.getId()));
+                extras.putString("listOwner", entry.getList().getCreatorId());
                 i.putExtras(extras);
                 startActivity(i);
             }
