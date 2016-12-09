@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
+import static com.shopmate.shopmate.R.id.view;
 
 /**
  * A fragment representing a list of Items.
@@ -60,7 +61,6 @@ public class ItemsRequestedFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private GoogleApiClient payClient;
-
     final int REQUEST_CODE_MASKED_WALLET = 5;
     final int REQUEST_CODE_FULL_WALLET = 7;
 
@@ -88,6 +88,7 @@ public class ItemsRequestedFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+
     }
 
     @Override

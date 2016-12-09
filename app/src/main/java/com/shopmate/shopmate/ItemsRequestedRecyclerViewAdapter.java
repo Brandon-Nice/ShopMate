@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -85,7 +86,22 @@ public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<Item
         holder.itemNameView.setText("Item Name: " + holder.mItem.getItemName());
         holder.itemPriceView.setText("Item Price: " + holder.mItem.getTotalPriceCents());
         holder.itemQtyView.setText("Item Quantity: " + holder.mItem.getQuantity());
+        holder.reimb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String fbToken = AccessToken.getCurrentAccessToken().getToken();
+                ShopMateService service = ShopMateServiceProvider.get();
+                Futures.addCallback(service.completePurchaseAsync(fbToken, holder.mItem.getId()), new FutureCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                    }
 
+                    @Override
+                    public void onFailure(Throwable t) {
+                    }
+                });
+            }
+        });
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,6 +125,7 @@ public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<Item
         public final TextView itemNameView;
         public final TextView itemPriceView;
         public final TextView itemQtyView;
+        public final Button reimb;
         public ShoppingItemPurchase mItem;
 
         public ViewHolder(View view) {
@@ -118,6 +135,7 @@ public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<Item
             itemNameView = (TextView) view.findViewById(R.id.item_name);
             itemPriceView = (TextView) view.findViewById(R.id.item_price);
             itemQtyView = (TextView) view.findViewById(R.id.item_quantity);
+            reimb = (Button) view.findViewById(R.id.acceptreq);
         }
 
         @Override
