@@ -1,7 +1,6 @@
 package com.shopmate.shopmate;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +36,12 @@ public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<Item
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText("Items Requested: " + mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        //holder.fromView.setText("Items Bought: " + mValues.get(position).id);
+        //holder.mContentView.setText(mValues.get(position).content);
+        holder.fromView.setText("From: Me");
+        holder.itemNameView.setText("Item Name: Pizza");
+        holder.itemPriceView.setText("Item Price: $5.00");
+        holder.itemQtyView.setText("Item Quantity: 5");
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,20 +62,24 @@ public class ItemsRequestedRecyclerViewAdapter extends RecyclerView.Adapter<Item
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView mIdView;
-        public final TextView mContentView;
+        public final TextView fromView;
+        public final TextView itemNameView;
+        public final TextView itemPriceView;
+        public final TextView itemQtyView;
         public DummyItem mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.id);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            fromView = (TextView) view.findViewById(R.id.from);
+            itemNameView = (TextView) view.findViewById(R.id.item_name);
+            itemPriceView = (TextView) view.findViewById(R.id.item_price);
+            itemQtyView = (TextView) view.findViewById(R.id.item_quantity);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + itemNameView.getText() + "'";
         }
     }
 }
